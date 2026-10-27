@@ -1,190 +1,117 @@
-# Proyecto Terminal I: SIR COVID-19 en México
+# Análisis de la Dinámica de Transmisión del COVID-19 en México
 
-> **Licenciatura en Física** | **Universidad Autónoma Metropolitana (UAM-I)**  
-> *Autor:* Ángel Omar García Hernández  
-> *Asesor:* Dr. Adrian Mauricio Escobar Ruiz
+**Un enfoque de Sistemas Dinámicos No Lineales**
+
+> Proyecto Terminal I · Licenciatura en Física · Universidad Autónoma Metropolitana (UAM-I)  
+> *Autor:* Ángel Omar García Hernández · *Asesor:* Dr. Adrian Mauricio Escobar Ruiz
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
-![Status](https://img.shields.io/badge/Status-En%20desarrollo-yellow)
-![Phase](https://img.shields.io/badge/Fase-F1%20Bibliografía-orange)
+![LaTeX](https://img.shields.io/badge/LaTeX-Report-red)
+![Status](https://img.shields.io/badge/Status-F1:%20Revisión%20Bibliográfica-orange)
 
 ---
 
-## 📍 Estructura del Repositorio
+## 🎯 Pregunta de Investigación
+
+¿Qué tanto de cada ola de COVID-19 en México (2020–2022) es consistente con un **modelo SIR de parámetros constantes**? ¿Cuáles parámetros son **identificables** usando casos confirmados y datos serológicos (ENSANUT)?
+
+---
+
+## 📊 Metodología
+
+Este proyecto reconstruye las dinámicas epidemiológicas del COVID-19 en México bajo el paradigma de la **Física de Sistemas Dinámicos**. A diferencia de enfoques estadísticos convencionales, se analiza la propagación del virus en el **espacio de fases**, identificando atractores y bifurcaciones.
+
+### Modelo matemático
+Un sistema SIR modificado que incorpora:
+- **Corrección por subregistro:** Calibración con datos de seroprevalencia
+- **Identificabilidad estructural:** Análisis de parámetros distinguibles  
+- **Incertidumbre cuantificada:** Métodos de máxima verosimilitud con perfiles de confianza
+
+### Ecuaciones fundamentales
+$$\frac{dS}{dt} = -\beta \frac{SI}{N}$$
+$$\frac{dI}{dt} = \beta \frac{SI}{N} - \gamma I$$
+$$\frac{dR}{dt} = \gamma I$$
+
+---
+
+## 📚 Fases del Proyecto
+
+| Fase | Descripción | Estado |
+|------|-------------|--------|
+| **F0** | Decisiones de alcance y metodología | ✅ Completada |
+| **F1** | Revisión sistemática de bibliografía | 🔄 En curso |
+| **F2** | Desarrollo de teoría (Cap. 2) | ⏳ Próxima |
+| **F3** | Análisis de datos y olas epidemiológicas | ⏳ Pendiente |
+| **F4** | Validación con datos sintéticos | ⏳ Pendiente |
+| **F5** | Análisis cuantitativo (datos reales) | ⏳ Pendiente |
+| **F6** | Integración del manuscrito | ⏳ Pendiente |
+| **F7** | Presentación final | ⏳ Pendiente |
+
+---
+
+## 📁 Estructura del Repositorio
 
 ```
 SIRCOVID19MX/
-├── v0-anterior/          ← Archivos de versión anterior (2025)
-│   ├── Capturas de pantalla
-│   ├── PTI (2).pdf       (presentación antigua)
-│   ├── Proyecto_Terminal_1 (3).pdf
-│   └── analisis_montecarlo.py
+├── bibliografia/         Fase F1: Revisión bibliográfica
+│   ├── INDICE.csv        Referencias indexadas (79 fuentes)
+│   ├── referencias.bib   BibTeX para manuscrito
+│   ├── fichas/           Análisis de lecturas clave
+│   └── fuentes/          PDFs organizados por tema
 │
-├── bibliografia/         ← NUEVO: Fase F1 (Revisión bibliográfica)
-│   ├── INDICE.csv        (79 referencias mapeadas)
-│   ├── referencias.bib   (BibTeX generado automáticamente)
-│   ├── fichas/           (fichas de lectura en markdown)
-│   ├── fuentes/          (PDFs organizados por bloque A-O)
-│   └── README.md         (guía de F1)
+├── v0-anterior/          Desarrollo anterior (archivo histórico)
 │
-├── scripts/              ← Utilidades
-│   └── generar_referencias.py  (regenera referencias.bib desde INDICE.csv)
-│
-└── README.md             (este archivo)
+└── scripts/              Utilidades
+    └── generar_referencias.py
 ```
 
 ---
 
-## 🎯 Proyecto
+## 🔬 Hipótesis Principales
 
-**Análisis de la dinámica de transmisión del COVID-19 en México (2020–2023) bajo un enfoque de sistemas dinámicos no lineales.**
-
-### Pregunta central
-¿Qué tanto de cada ola (2020–2022) es consistente con un **modelo SIR de parámetros constantes**, y cuáles parámetros son **identificables con casos confirmados + serología ENSANUT**?
-
-### Hipótesis principales
-- **H1:** R₀ y S₀ no son identificables por separado; R_eff(0) sí.
-- **H2:** β constante deja residuos sistemáticos en olas con intervenciones.
-- **H3:** El tamaño final predicho sobrestima el aumento de seroprevalencia.
+- **H1:** Los parámetros R₀ y S₀ no son identificables por separado; sin embargo, R_eff(0) sí lo es.
+- **H2:** La suposición de β constante deja residuos sistemáticos en olas con intervenciones no farmacéuticas significativas.
+- **H3:** El tamaño final predicho por el modelo sobrestima el aumento real de seroprevalencia observado en ENSANUT.
 
 ---
 
-## 📚 Fases (F0–F7)
+## 📖 Resultados Esperados
 
-| Fase | Tema | Estado |
-|------|------|--------|
-| F0 | Decisiones y alcance | ✅ Cerrada |
-| **F1** | **Revisión bibliográfica** | 🔄 **En curso** |
-| F2 | Teoría del SIR | ⏳ Pendiente |
-| F3 | Datos y olas | ⏳ Pendiente |
-| F4 | Método (datos sintéticos) | ⏳ Pendiente |
-| F5 | Análisis (datos reales) | ⏳ Pendiente |
-| F6 | Escritura integrada | ⏳ Pendiente |
-| F7 | Presentación | ⏳ Pendiente |
+Al cerrar cada fase se espera producir:
+- Caracterización cuantitativa de parámetros epidemiológicos por ola y variante
+- Estimación de incertidumbre estructural en el modelo SIR
+- Identificación de limitaciones y propuestas de mejora
+- Manuscrito completo con código reproducible
 
 ---
 
-## 🔍 Fase F1: Revisión Bibliográfica
+## 🛠️ Herramientas y Tecnología
 
-**Sistema sin Zotero** — Git + CSV + Markdown.
-
-### Workflow
-1. **Clonar** el repo
-2. **Leer** un PDF de `bibliografia/Bibliografía/`
-3. **Fichar** en `bibliografia/fichas/CLAVE.md` (usando template)
-4. **Marcar** estado en `INDICE.csv` como "fichado"
-5. **Commit & push**
-
-### Regla fundamental
-> **Sin PDF leído no hay cita.**
-
-Cada referencia que uses en el escrito debe tener:
-- ✓ PDF descargado en `fuentes/BLOQUE/`
-- ✓ Ficha completada en `fichas/CLAVE.md`
-- ✓ Estado = "fichado" en INDICE.csv
-
-### Bloques bibliográficos (A–O)
-- **A–L:** Núcleo (sistemas dinámicos, SIR clásico, parámetros, México, método)
-- **M–O:** Expansión (pronóstico, intervenciones, respuesta mexicana)
-- **LIB:** Libros (Strogatz, Pawitan, Murray, Pearl, Gelman, McElreath, Kucharski)
-
-Ver `bibliografia/README.md` para detalles completos.
+- **Python 3.9+:** Simulación numérica y análisis de datos
+- **SciPy & NumPy:** Solución de ODEs y computación científica
+- **LaTeX:** Redacción del manuscrito
+- **Git:** Control de versión y reproducibilidad
+- **BibTeX:** Gestión de referencias
 
 ---
 
-## 📖 Cómo empezar
+## 📅 Cronograma
 
-```bash
-# Clonar
-git clone https://github.com/omargah/SIRCOVID19MX.git
-cd SIRCOVID19MX
-
-# Ver guía de F1
-cat bibliografia/README.md
-
-# Crear estructura local (si no existe)
-mkdir -p bibliografia/fuentes/{A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,LIB}
-mkdir -p bibliografia/fichas
-
-# Regenerar referencias.bib después de editar INDICE.csv
-python3 scripts/generar_referencias.py
-
-# Trabajar y hacer commit
-git add bibliografia/
-git commit -m "F1: Ficha B03 (Diekmann 1990) — Definición de R₀"
-git push
-```
-
----
-
-## 📝 Referencia rápida: Estructura de una ficha
-
-```markdown
-# B03 · Diekmann et al. (1990)
-
-**Referencia:** [APA completa]
-
-## Qué afirma (en tus palabras)
-[Tu resumen del argumento principal]
-
-## Cifra clave con página
-- [Cifra], pág. [n]
-
-## Método
-[Cómo lo investigaron]
-
-## Limitaciones
-[Qué no cubre]
-
-## Dónde la usas
-[Capítulo/sección/pregunta de tu tesis]
-
-## Estado
-- [ ] PDF leído
-- [ ] Ficha completada
-```
-
-Usa `bibliografia/fichas/TEMPLATE.md` como plantilla.
-
----
-
-## 🔗 Enlaces útiles
-
-- **INDICE.csv:** Lista de todas las 79 referencias con DOI
-- **referencias.bib:** BibTeX para usar en LaTeX
-- **Guía F1:** `bibliografia/README.md`
-
----
-
-## 📅 Calendario orientativo (F1)
-
-| Semana | Bloques | Lectura |
-|--------|---------|---------|
-| 1 | A, B, D | Strogatz, Kermack-McKendrick, Hethcote |
-| 2 | C, F, G | Sistemas complejos, r→R₀, parámetros |
-| 3 | E, H, I | COVID internacional, olas, serología |
-| 4 | J, L, K | Identificabilidad, límites, método MLE |
-| 5+ | M, N, O | Pronóstico, intervenciones, respuesta |
-
----
-
-## ⚙️ Reglas de oro
-
-1. **Sin PDF leído no hay cita** — antes de citar, ficha.
-2. **Git es la fuente de verdad** — nada en local, todo en GitHub.
-3. **Markdown para fichas** — fácil de versionar y buscar.
-4. **INDICE.csv + referencias.bib** — mantén sincronizados (script: `generar_referencias.py`).
-5. **Commit descriptivo** — `F1: [Qué se hizo]`
+**Semana 1–2 (Bibliografía):** Bloques A, B, D (Sistemas dinámicos, SIR clásico, epidemiología)  
+**Semana 3–4:** Bloques C–L (Física, parámetros, México, método de estimación)  
+**Semana 5–8:** Bloques M–O (Pronóstico, intervenciones, respuesta mexicana)
 
 ---
 
 ## 📧 Contacto
 
-**Omar García Hernández**  
-cbi2203043236@izt.uam.mx  
-Licenciatura en Física · UAM-Iztapalapa
+**Ángel Omar García Hernández**  
+Licenciatura en Física · Universidad Autónoma Metropolitana (UAM-I)  
+cbi2203043236@izt.uam.mx
+
+**Asesor:** Dr. Adrian Mauricio Escobar Ruiz
 
 ---
 
-**Última actualización:** 2026-10-27  
-**Versión:** F1 (Revisión bibliográfica)
+**Última actualización:** Octubre 2026  
+**Fase actual:** F1 — Revisión Bibliográfica Sistemática
