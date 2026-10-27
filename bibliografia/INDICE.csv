@@ -1,0 +1,80 @@
+Clave,Bloque,Autor,Año,DOI,Estado
+A01,A,Strogatz,2018,,descargado
+A02,A,Perko,2001,,descargado
+B01,B,Kermack & McKendrick,1927,10.1098/rspa.1927.0118,descargado
+B02,B,Hethcote,2000,,descargado
+B03,B,Diekmann et al.,1990,10.1007/BF00178324,descargado
+B04,B,Brauer et al.,2008,,descargado
+B07,B,Ma & Earn,2006,10.1007/s11538-005-9047-7,descargado
+B08,B,Gosselin,2020,,descargado
+C02,C,Vespignani,2012,,descargado
+C03,C,Vespignani,2020,,descargado
+D03,D,Delamater et al.,2019,10.3201/eid2501.171901,descargado
+D05,D,Ridenhour et al.,2014,,descargado
+E02,E,Verity et al.,2020,,descargado
+E04,E,Davies et al.,2021,,descargado
+F01,F,Wallinga & Lipsitch,2007,10.1098/rspb.2006.3754,descargado
+F02,F,Wearing et al.,2005,10.1371/journal.pmed.0020174,descargado
+F03,F,Ma,2020,10.1016/j.idm.2019.12.009,descargado
+F04,F,Ma et al.,2014,10.1007/s11538-013-9918-2,descargado
+F07,F,Park et al.,2019,,descargado
+F08,F,Roberts & Heesterbeek,2007,,descargado
+G01,G,Lauer et al.,2020,10.7326/M20-0504,descargado
+G02,G,Ganyani et al.,2020,10.2807/1560-7917.ES.2020.25.17.2000257,descargado
+G03,G,Backer et al.,2020,,descargado
+G04,G,Byrne et al.,2020,10.1136/bmjopen-2020-039856,descargado
+G05,G,Hart et al.,2022,10.1016/S1473-3099(22)00001-9,descargado
+G06,G,Manica et al.,2022,10.1016/j.lanepe.2022.100446,descargado
+G08,G,He et al.,2020,,descargado
+H01,H,Zárate et al.,2022,10.1128/spectrum.02240-21,descargado
+H03,H,Flores-Alanis et al.,2022,,descargado
+I01,I,Carnalla et al.,2023,10.1002/jmv.29038,descargado
+I03,I,Basto-Abreu et al.,2022,10.1038/s41467-022-28232-9,descargado
+I04,I,Sánchez-Pájaro,2021,,descargado
+J01,J,Raue et al.,2009,10.1093/bioinformatics/btp358,descargado
+J03,J,Roosa & Chowell,2019,10.1186/s12976-018-0097-6,descargado
+J05,J,Chis et al.,2011,,descargado
+K02,K,Venzon & Moolgavkar,1988,10.2307/2347496,descargado
+K04,K,King et al.,2016,,descargado
+L01,L,Britton et al.,2020,10.1126/science.abc6810,descargado
+L02,L,Lloyd-Smith et al.,2005,10.1038/nature04153,descargado
+L05,L,Keeling & Eames,2005,,descargado
+L06,L,Wallinga et al.,2006,,descargado
+M02,M,Bracher et al.,2021,10.1371/journal.pcbi.1008618,descargado
+M10,M,Gneiting et al.,2007,,descargado
+M11,M,Bracher et al.,2021,,descargado
+M12,M,Cramer et al.,2022,,descargado
+M13,M,Sherratt et al.,2023,,descargado
+M16,M,Chowell et al.,2020,,descargado
+M17,M,Roosa et al.,2020,,descargado
+M18,M,Wu et al.,2020,,descargado
+M19,M,Kucharski et al.,2020,,descargado
+M20,M,Lipsitch et al.,2020,,descargado
+M21,M,Metcalf & Lessler,2017,,descargado
+M25,M,Wilson et al.,2017,,descargado
+N01,N,Soltesz et al.,2020,10.1038/s41586-020-3025-y,descargado
+N12,N,Craig et al.,2017,,descargado
+N13,N,Kraemer et al.,2020,,descargado
+N15,N,Hsiang et al.,2020,,descargado
+N16,N,Talic et al.,2021,,descargado
+N17,N,Mendez-Brito et al.,2021,,descargado
+N18,N,Sharma et al.,2021,,descargado
+N19,N,Chernozhukov et al.,2021,,descargado
+N20,N,Watson et al.,2022,,descargado
+N21,N,Msemburi et al.,2023,,descargado
+O06,O,Knaul et al.,2021,,descargado
+O09,O,Dahal et al.,2021,,descargado
+O11,O,Capistrán et al.,2021,,descargado
+O13,O,Santana-Cibrian et al.,2020,,descargado
+O14,O,Mena et al.,2020,,descargado
+O15,O,Bello-Chavolla et al.,2023,,descargado
+O17,O,Ayora-Talavera et al.,2022,,descargado
+O18,O,Ibarra-Nava et al.,2020,,descargado
+LIB01,LIB,Diekmann et al.,1989,,descargado
+LIB03,LIB,Pawitan,2001,,descargado
+LIB05,LIB,Murray,1989,,descargado
+LIB09,LIB,Pearl et al.,2016,,descargado
+LIB10,LIB,Hernández Ávila,2007,,descargado
+LIB11,LIB,Gelman et al.,2013,,descargado
+LIB12,LIB,McElreath,2020,,descargado
+LIB13,LIB,Kucharski,2020,,descargado
