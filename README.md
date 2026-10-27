@@ -106,8 +106,12 @@ Al cerrar cada fase se espera producir:
 ## 📧 Contacto
 
 **Ángel Omar García Hernández**  
-Licenciatura en Física · Universidad Autónoma Metropolitana (UAM-I)  
-cbi2203043236@izt.uam.mx
+
+- Licenciatura en Física · Universidad Autónoma Metropolitana (UAM-I)  
+  cbi2203043236@izt.uam.mx
+
+- Primer Año de Medicina · Facultad de Medicina, UNAM  
+  mc24gaha7938@facmed.unam.mx
 
 **Asesor:** Dr. Adrian Mauricio Escobar Ruiz
 
