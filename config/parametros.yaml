@@ -1,0 +1,91 @@
+# Parámetros del proyecto. Regla (2): ningún parámetro sin fuente.
+#
+# Cada entrada tiene:
+#   valor:   número, o null si todavía no se ha fijado.
+#   unidad:  unidades físicas ("1" = adimensional).
+#   fuente:  {tipo: doi, doi: "10....", pagina: "..."}   -> cifra tomada de un artículo
+#            {tipo: regla, regla: "..."}                   -> valor de diseño o calculado
+#   estado:  fijo | pendiente
+#
+# src/datos.py::cargar_parametros valida este archivo y se niega a
+# entregar un parámetro "pendiente" o sin fuente. Así, si alguien olvida
+# llenar una cifra, el código truena en vez de usar un número inventado.
+#
+# Regla de bibliografia/README.md: sin PDF leído no hay cita. Por eso los
+# parámetros para datos reales están "pendiente" hasta que Omar llene la
+# ficha correspondiente con la cifra y la página.
+
+sintetico:
+  # Valores de diseño para F4 (validación con datos sintéticos). No pretenden
+  # describir a México; se eligen para parecerse en orden de magnitud a una
+  # ola real y para que la simetría de escala de H1 tenga un rango amplio
+  # (s0 < 1 y rho << 1).
+  semilla:
+    valor: 20200228   # entero arbitrario
+    unidad: "1"
+    fuente: {tipo: regla, regla: "Semilla fija para reproducibilidad; cualquier entero sirve."}
+    estado: fijo
+  N:
+    valor: 1.0e+7
+    unidad: personas
+    fuente: {tipo: regla, regla: "Valor de diseño: población del orden de una zona metropolitana grande."}
+    estado: fijo
+  gamma:
+    valor: 0.14285714285714285   # = 1/7
+    unidad: 1/dia
+    fuente: {tipo: regla, regla: "Valor de diseño: periodo infeccioso medio de 7 días, gamma = 1/7."}
+    estado: fijo
+  R0:
+    valor: 2.5
+    unidad: "1"
+    fuente: {tipo: regla, regla: "Valor de diseño (verdad conocida para F4)."}
+    estado: fijo
+  s0:
+    valor: 0.6
+    unidad: "1"
+    fuente: {tipo: regla, regla: "Valor de diseño (verdad conocida para F4). s0 < 1 para que la simetría de H1 sea visible."}
+    estado: fijo
+  i0:
+    valor: 1.0e-5
+    unidad: "1"
+    fuente: {tipo: regla, regla: "Valor de diseño: 100 infecciosos en N = 1e7."}
+    estado: fijo
+  rho:
+    valor: 0.1
+    unidad: "1"
+    fuente: {tipo: regla, regla: "Valor de diseño: se reporta 1 de cada 10 infecciones."}
+    estado: fijo
+  k:
+    valor: 20.0
+    unidad: "1"
+    fuente: {tipo: regla, regla: "Valor de diseño: sobredispersión moderada (Var = mu + mu^2/20)."}
+    estado: fijo
+  n_semanas:
+    valor: 30
+    unidad: semanas
+    fuente: {tipo: regla, regla: "Valor de diseño: cubre crecimiento, pico y descenso con los valores de arriba."}
+    estado: fijo
+  sero:
+    # Dos encuestas: una antes de la ola (t=0) y otra a la semana 26.
+    # ee = sqrt(p(1-p)/n) con p ~ 0.3 y n = 5000 da ~0.0065; redondeamos a 0.007.
+    valor: [[0.0, 182.0, null, 0.007]]
+    unidad: "[dia, dia, fraccion, fraccion]"
+    fuente: {tipo: regla, regla: "Diseño: ee = sqrt(p(1-p)/n), p = 0.3, n = 5000. delta_obs (null) se simula."}
+    estado: fijo
+  B_bootstrap:
+    valor: 200
+    unidad: replicas
+    fuente: {tipo: regla, regla: "200 réplicas: error Monte Carlo de un percentil 2.5% ~ sqrt(0.025*0.975/200) ~ 0.011 en probabilidad; suficiente para validar el método."}
+    estado: fijo
+
+real:
+  N_mexico:
+    valor: null
+    unidad: personas
+    fuente: {tipo: regla, regla: "PENDIENTE: población total de México. Candidato: Censo de Población y Vivienda 2020 (INEGI). Decidir en F3 si se usa censo 2020 o proyección CONAPO por año de ola, y registrar la regla."}
+    estado: pendiente
+  gamma:
+    valor: null
+    unidad: 1/dia
+    fuente: {tipo: regla, regla: "PENDIENTE: 1/(periodo infeccioso). Candidatos en bibliografía: G04 (Byrne et al. 2020, 10.1136/bmjopen-2020-039856), G08 (He et al. 2020). Llenar con DOI y página tras fichar."}
+    estado: pendiente

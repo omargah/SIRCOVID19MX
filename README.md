@@ -1,121 +1,114 @@
-# Análisis de la Dinámica de Transmisión del COVID-19 en México
+# ¿Qué tanto de la COVID-19 en México cabe en un SIR?
 
-**Un enfoque de Sistemas Dinámicos No Lineales**
+> Proyecto Terminal 1 (rehecho) · Licenciatura en Física · UAM-Iztapalapa
+> Autor: Ángel Omar García Hernández · Trabajo personal, sin asesor.
 
-> Proyecto Terminal I · Licenciatura en Física · Universidad Autónoma Metropolitana (UAM-I)  
-> *Autor:* Ángel Omar García Hernández · *Asesor:* Dr. Adrian Mauricio Escobar Ruiz
+Solo modelo SIR. La versión anterior está archivada en `v0-anterior/` y **no**
+se usa como base de código: tenía errores conocidos.
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
-![LaTeX](https://img.shields.io/badge/LaTeX-Report-red)
-![Status](https://img.shields.io/badge/Status-F1:%20Revisión%20Bibliográfica-orange)
+## Pregunta
 
----
+¿Qué parte de la dinámica 2020–2023 es consistente con un SIR de parámetros
+constantes? ¿Qué parámetros son identificables con casos + serología? ¿Qué
+tan útil habría sido en tiempo real? ¿Cuándo cambió la transmisión respecto a
+las medidas de la SSA?
 
-## 🎯 Pregunta de Investigación
+## Hipótesis
 
-¿Qué tanto de cada ola de COVID-19 en México (2020–2022) es consistente con un **modelo SIR de parámetros constantes**? ¿Cuáles parámetros son **identificables** usando casos confirmados y datos serológicos (ENSANUT)?
+- **H1** R0 y S0 no son identificables por separado; solo R_eff(0) = R0·S0/N.
+- **H2** β constante por ola deja residuos sistemáticos.
+- **H3** El tamaño final sobrestima el aumento de seroprevalencia (ENSANUT).
+- **H4a** El SIR supera a la persistencia a 1–2 semanas (WIS).
+- **H4b** El SIR no estabiliza la fecha del pico antes de que ocurra.
+- **H5** La transmisión bajó después de la JNSD, no antes.
 
----
+Criterios de decisión y notas críticas: [`docs/plan_analisis.md`](docs/plan_analisis.md).
 
-## 📊 Metodología
+## Método
 
-Este proyecto reconstruye las dinámicas epidemiológicas del COVID-19 en México bajo el paradigma de la **Física de Sistemas Dinámicos**. A diferencia de enfoques estadísticos convencionales, se analiza la propagación del virus en el **espacio de fases**, identificando atractores y bifurcaciones.
+Máxima verosimilitud con perfiles (nada bayesiano). β constante por ola
+(H2), β por tramos (H5). Intervalos por bootstrap paramétrico.
 
-### Modelo matemático
-Un sistema SIR modificado que incorpora:
-- **Corrección por subregistro:** Calibración con datos de seroprevalencia
-- **Identificabilidad estructural:** Análisis de parámetros distinguibles  
-- **Incertidumbre cuantificada:** Métodos de máxima verosimilitud con perfiles de confianza
+## Reglas del proyecto
 
-### Ecuaciones fundamentales
-$$\frac{dS}{dt} = -\beta \frac{SI}{N}$$
-$$\frac{dI}{dt} = \beta \frac{SI}{N} - \gamma I$$
-$$\frac{dR}{dt} = \gamma I$$
+1. **Ninguna cifra a mano.** El escrito usa `reports/numeros.tex`, generado por
+   `scripts/make_numeros.py`.
+2. **Ningún parámetro sin fuente** en `config/parametros.yaml` (DOI + página, o
+   regla de cálculo). `src/datos.py` lo hace cumplir: truena si falta.
+3. **Primero datos sintéticos.** Ningún método toca datos reales hasta
+   recuperar parámetros conocidos.
+4. **El plan se congela al cerrar F4.** Cada desviación posterior va a
+   `docs/desviaciones.md` con su motivo.
+5. **Nada se borra para que una figura se vea bien.**
+6. **Cada línea debe poder explicarse.** El código comenta el porqué.
 
----
-
-## 📚 Fases del Proyecto
-
-| Fase | Descripción | Estado |
-|------|-------------|--------|
-| **F0** | Decisiones de alcance y metodología | ✅ Completada |
-| **F1** | Revisión sistemática de bibliografía | 🔄 En curso |
-| **F2** | Desarrollo de teoría (Cap. 2) | ⏳ Próxima |
-| **F3** | Análisis de datos y olas epidemiológicas | ⏳ Pendiente |
-| **F4** | Validación con datos sintéticos | ⏳ Pendiente |
-| **F5** | Análisis cuantitativo (datos reales) | ⏳ Pendiente |
-| **F6** | Integración del manuscrito | ⏳ Pendiente |
-| **F7** | Presentación final | ⏳ Pendiente |
-
----
-
-## 📁 Estructura del Repositorio
+## Estructura
 
 ```
-SIRCOVID19MX/
-├── bibliografia/         Fase F1: Revisión bibliográfica
-│   ├── INDICE.csv        Referencias indexadas (79 fuentes)
-│   ├── referencias.bib   BibTeX para manuscrito
-│   ├── fichas/           Análisis de lecturas clave
-│   └── fuentes/          PDFs organizados por tema
-│
-├── v0-anterior/          Desarrollo anterior (archivo histórico)
-│
-└── scripts/              Utilidades
-    └── generar_referencias.py
+config/parametros.yaml   parámetros con fuente (regla 2)
+data/raw/                datos descargados, sin tocar (no van a git; registro en README)
+data/processed/          datos derivados, regenerables
+src/
+  datos.py               carga y valida parámetros; (F3) datos SSA y ENSANUT
+  olas.py                (F3) delimitación de olas
+  sir.py                 SIR, incidencia semanal, simulación BinNeg
+  verosimilitud.py       log-verosimilitud, MLE, perfiles, bootstrap
+  identificabilidad.py   simetría de escala (H1), IC por perfil
+tests/                   pytest: contra soluciones exactas y datos sintéticos
+scripts/
+  correr_sintetico.py    experimento sintético (lento) -> reports/resultados/
+  make_numeros.py        -> reports/numeros.tex
+  make_figuras.py        -> reports/figuras/
+  make_tablas.py         -> reports/tablas/
+reports/                 todo lo generado que cita el escrito
+escrito/                 LaTeX
+docs/actas/              acta de cierre de cada fase
+docs/plan_analisis.md    plan (borrador hasta cerrar F4)
+docs/desviaciones.md     registro de desviaciones
+bibliografia/            índice, BibTeX y fichas de lectura (F1)
+v0-anterior/             archivo histórico; no se reutiliza
 ```
 
----
+## Cómo reproducir
 
-## 🔬 Hipótesis Principales
+```bash
+conda env create -f environment.yml
+```
 
-- **H1:** Los parámetros R₀ y S₀ no son identificables por separado; sin embargo, R_eff(0) sí lo es.
-- **H2:** La suposición de β constante deja residuos sistemáticos en olas con intervenciones no farmacéuticas significativas.
-- **H3:** El tamaño final predicho por el modelo sobrestima el aumento real de seroprevalencia observado en ENSANUT.
+```bash
+conda activate sircovid
+```
 
----
+```bash
+make test
+```
 
-## 📖 Resultados Esperados
+```bash
+make
+```
 
-Al cerrar cada fase se espera producir:
-- Caracterización cuantitativa de parámetros epidemiológicos por ola y variante
-- Estimación de incertidumbre estructural en el modelo SIR
-- Identificación de limitaciones y propuestas de mejora
-- Manuscrito completo con código reproducible
+`make` corre el experimento sintético (unos minutos) y regenera números,
+figuras y tablas. `make escrito` además compila el PDF (requiere LaTeX).
 
----
+## Fases
 
-## 🛠️ Herramientas y Tecnología
+Cada fase cierra con acta (`docs/actas/Fx-nombre.md`), commit etiquetado
+`v0.x` y revisión crítica.
 
-- **Python 3.9+:** Simulación numérica y análisis de datos
-- **SciPy & NumPy:** Solución de ODEs y computación científica
-- **LaTeX:** Redacción del manuscrito
-- **Git:** Control de versión y reproducibilidad
-- **BibTeX:** Gestión de referencias
+| Fase | Contenido | Estado |
+|---|---|---|
+| F0 | Alcance, hipótesis, reglas, estructura | Cerrada (`v0.0`, [acta](docs/actas/F0-alcance.md)) |
+| F1 | Bibliografía: fichas con cifra y página | En curso |
+| F2 | Teoría: SIR, identificabilidad, verosimilitud | En curso (derivación de H1 en borrador) |
+| F3 | Datos SSA y ENSANUT; regla de olas | Pendiente |
+| F4 | Validación sintética de todos los métodos; **congela el plan** | En curso (H1 hecho; H2–H5 pendientes) |
+| F5 | Análisis con datos reales | Bloqueada hasta cerrar F4 |
+| F6 | Escrito | Pendiente |
+| F7 | Presentación | Pendiente |
 
----
+## Contacto
 
-## 📅 Cronograma
+Ángel Omar García Hernández
 
-**Semana 1–2 (Bibliografía):** Bloques A, B, D (Sistemas dinámicos, SIR clásico, epidemiología)  
-**Semana 3–4:** Bloques C–L (Física, parámetros, México, método de estimación)  
-**Semana 5–8:** Bloques M–O (Pronóstico, intervenciones, respuesta mexicana)
-
----
-
-## 📧 Contacto
-
-**Ángel Omar García Hernández**  
-
-- Licenciatura en Física · Universidad Autónoma Metropolitana (UAM-I)  
-  cbi2203043236@izt.uam.mx
-
-- Primer Año de Medicina · Facultad de Medicina, UNAM  
-  mc24gaha7938@facmed.unam.mx
-
-**Asesor:** Dr. Adrian Mauricio Escobar Ruiz
-
----
-
-**Última actualización:** Octubre 2026  
-**Fase actual:** F1 — Revisión Bibliográfica Sistemática
+- Licenciatura en Física, UAM-I · cbi2203043236@izt.uam.mx
+- Facultad de Medicina, UNAM · mc24gaha7938@facmed.unam.mx

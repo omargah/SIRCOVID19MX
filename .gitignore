@@ -1,0 +1,23 @@
+# Sistema
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Datos crudos de la SSA: pesan GB. Se descargan con el script de F3 y se
+# documenta la URL, la fecha de descarga y el hash SHA-256 en data/raw/README.md.
+data/raw/*
+!data/raw/README.md
+data/processed/*
+!data/processed/README.md
+
+# LaTeX
+escrito/*.aux
+escrito/*.log
+escrito/*.out
+escrito/*.toc
+escrito/*.bbl
+escrito/*.blg
+escrito/*.fls
+escrito/*.fdb_latexmk
+escrito/*.synctex.gz
