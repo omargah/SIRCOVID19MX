@@ -205,3 +205,56 @@ CoViGen-Mex/InDRE*:
 | 2021-12-15 – 2022-04-30 | Ómicron BA.1/BA.1.1 (BA.2 al final) | 4.ª |
 | 2022-05-01 – 2022-10-31 | Ómicron BA.4/BA.5 | 5.ª |
 | 2022-11-01 – 2023-02-28 | Ómicron BQ.1, XBB.1.5 | 5.ª (extensión a feb 2023) |
+
+---
+
+## 8. Frontera aparte 1.ª/2.ª ola (decisión POSTERIOR; criterio externo a la regla de la curva)
+
+> **Estatus:** esta sección se añadió **después** de ver el resultado de la
+> regla principal con la enmienda A1 (4 olas; la 1.ª y la 2.ª convencionales
+> quedan fusionadas en un solo episodio con pico 2021-01-18) y **antes** de
+> implementarla en `src/olas.py` (ver historial de git). **No es un resultado
+> de la regla R1–R7 + A1**, sino una decisión de modelado tomada a la vista de
+> ese resultado. Se declara aparte para que no pueda confundirse con él.
+
+**Motivo (externo a la curva de incidencia).** La 1.ª y la 2.ª olas
+convencionales corresponden a poblaciones virales distintas: linajes
+ancestrales (B.1, B.1.1, B.1.1.222) hasta ≈ nov 2020 y B.1.1.519 después
+(Zárate et al. 2022, doi:10.1128/spectrum.02240-21; Taboada et al. 2021), con
+el reemplazo durante el hueco de incidencia de sep–nov 2020. El SIR de
+parámetros constantes no debe ajustar ambos episodios con un solo juego de
+parámetros. La regla de la curva (R5, ρ = 2) no los separa porque el valle es
+somero (ρ\* ≈ 1.46 con w = 28); la separación se justifica, por tanto, por la
+literatura de variantes y **no** por la prominencia.
+
+**Lo que NO cambia.** ρ = 2, w = 28, la corrección del lote 2020-10-05, R1–R7,
+la ventana de estudio y la salida de A1 (`resultados/olas/A1/`) quedan
+intactos. No se introduce ningún parámetro nuevo.
+
+**F1 — Picos que delimitan.** Dentro de la ola 1 de A1 (episodio fusionado):
+
+- *pico de la 2.ª ola*: el pico aceptado por A1 (2021-01-18);
+- *pico de la 1.ª ola*: el máximo local de $z_t$ (R3–R4, misma serie suavizada
+  de A1) con **mayor prominencia** (R5) entre los candidatos anteriores al pico
+  de la 2.ª ola. Se usa la misma prominencia de R5, sin umbral.
+
+**F2 — Frontera.** La frontera 1.ª/2.ª es el día de **mínimo de $\bar y_t$**
+(media móvil centrada de 28 días, A1) en el intervalo abierto entre ambos
+picos, es decir, el mismo criterio de R6 aplicado a ese par de picos. La 1.ª
+ola abarca $[\,$2020-02-27$,\ v)$ y la 2.ª, $[\,v,\ $fin de la ola 1 de A1$\,]$.
+El resto de las olas de A1 no se modifica: el total es 5 = 4 (A1) + 1 (separación).
+
+**F3 — Expectativa declarada y verificación.** Por la tabla de ρ\* de A1 se
+espera que la frontera caiga cerca del **2020-10-01**. Se verifica que cae
+entre 2020-09-01 y 2020-11-30 (dentro del hueco de sep–nov 2020); si no
+cayera ahí, se reporta tal cual y no se ajusta nada.
+
+**F4 — Sensibilidad.** Se repite F1–F2 con las ventanas de sensibilidad de A1,
+$w \in \{21, 28, 35\}$ (además de 7 y 14 como exploración), y se reporta el
+desplazamiento en días de la frontera respecto de $w = 28$. Se señala si supera
+10 días.
+
+**Productos.** `resultados/olas/A1_frontera/` (`olas.csv`, `frontera_1_2.csv`,
+`sensibilidad_frontera.csv`, `olas.png`). Toda tabla o texto que use 5 olas debe
+indicar que la separación 1.ª/2.ª es un **criterio externo a la regla de la
+curva, tomado después de ver el resultado de la regla principal**.
