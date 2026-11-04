@@ -1,0 +1,32 @@
+# Medidas de la Secretaría de Salud para H5 (decisión I1, Omar 2026-11-03/04).
+#
+# Criterio fijado ANTES de ver datos (no se cambia sin registrar desviación):
+#   * Reducción medible: el IC95 de beta_después/beta_antes excluye 1.
+#   * H5 se rechaza si TODO el IC95 del punto de cambio tau queda antes de la
+#     fecha de la medida.
+#   * La comparación es POR SEMANA EPIDEMIOLÓGICA (domingo-sábado,
+#     src/semanas.py): la verosimilitud es semanal y tau tiene resolución de
+#     una semana. "Antes de la medida" = semanas anteriores a la semana que
+#     contiene la fecha.
+#   * La movilidad (Google, DAT01) NO entra al criterio; solo interpreta.
+#   * Sin corrección por retraso de notificación (I3: se trunca): la fecha
+#     estimada de tau puede quedar corrida por ese retraso (Gostic 2020, M07,
+#     p. 10).
+#
+# Las DOS fechas candidatas se registran con su fuente. NINGUNA se cita
+# hasta leer el texto del acuerdo en el DOF (la red de esta sesión no alcanza
+# dof.gob.mx; pendiente). Ambas caen en la semana del domingo 22 al sábado 28
+# de marzo de 2020 (tests/test_semanas.py), así que la comparación semanal no
+# depende de cuál sea la correcta.
+
+jornada_nacional_sana_distancia:
+  inicio_jornada:
+    fecha: null            # candidata 2020-03-23; NO citar hasta verificar
+    estado: pendiente_verificar
+    fuente_candidata: "Comunicado de la Secretaría de Salud sobre la Jornada Nacional de Sana Distancia (sin PDF en la bibliografía; pedir al chat 01)."
+  acuerdo_dof:
+    fecha: null            # candidata 2020-03-24; NO citar hasta verificar
+    estado: pendiente_verificar
+    fuente_candidata: "Acuerdo por el que se establecen las medidas preventivas que se deberán implementar para la mitigación y control de los riesgos para la salud que implica la enfermedad por el virus SARS-CoV2 (COVID-19). DOF, edición vespertina."
+    url_candidata: "https://www.dof.gob.mx/nota_detalle.php?codigo=5590339&fecha=24/03/2020"
+    fecha_consulta: null   # llenar al abrir el texto del acuerdo
