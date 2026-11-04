@@ -33,8 +33,12 @@ Máxima verosimilitud con perfiles (nada bayesiano). β constante por ola
 
 1. **Ninguna cifra a mano.** El escrito usa `reports/numeros.tex`, generado por
    `scripts/make_numeros.py`.
-2. **Ningún parámetro sin fuente** en `config/parametros.yaml` (DOI + página, o
-   regla de cálculo). `src/datos.py` lo hace cumplir: truena si falta.
+2. **Ningún parámetro sin fuente** en `config/parametros.yaml` (DOI + página,
+   cifra oficial con año, o regla de cálculo). Lo que no tiene fuente se marca
+   `supuesto: true` con un rango y entra al análisis de sensibilidad.
+   `src/datos.py` lo hace cumplir: truena si falta. El tiempo característico
+   D (γ = 1/D) es uno solo por ola, el mismo para estimar y simular, y es
+   intervalo de generación o periodo infeccioso, nunca incubación.
 3. **Primero datos sintéticos.** Ningún método toca datos reales hasta
    recuperar parámetros conocidos.
 4. **El plan se congela al cerrar F4.** Cada desviación posterior va a

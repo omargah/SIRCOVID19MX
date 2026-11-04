@@ -54,9 +54,13 @@ SIR determinista por ola, en fracciones de población (`src/sir.py`):
    fuera la disponible en ese momento sobrestima el desempeño. F3 debe
    conseguir versiones fechadas o modelar el retraso; si no, H4 se reporta
    como cota optimista.
-4. **γ fijo.** Todos los resultados son condicionales a γ. Plan: análisis de
-   sensibilidad con el rango de γ de la literatura (fuente en
-   `config/parametros.yaml`).
+4. **γ fijo.** Todos los resultados son condicionales a γ = 1/D, con D el
+   intervalo de generación medio por ola/variante (`D_olaN` en
+   `config/parametros.yaml`; el mismo D para estimar y para simular, nunca la
+   incubación, que fue el error del PT1 viejo: 10/11/9/7/6 d para estimar y
+   5.1/3.0 d de incubación para simular). Plan: análisis de sensibilidad
+   barriendo cada parámetro con `supuesto: true` en su rango
+   (`src/datos.py::rangos_sensibilidad`).
 5. **Fecha de síntomas vs fecha de infección (H5).** τ se estima en tiempo
    de síntomas; para compararlo con la JNSD hay que restar el periodo de
    incubación (parámetro con fuente, pendiente: G01 Lauer et al. 2020).
