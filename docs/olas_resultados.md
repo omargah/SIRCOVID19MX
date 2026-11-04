@@ -150,3 +150,28 @@ superan el criterio de robustez.
 - **Etiquetas de variante:** los periodos de dominancia son aproximados. Las
   fuentes de las olas 3–5 están marcadas *por verificar* y deben confirmarse con
   CoViGen-Mex/InDRE antes de citarse.
+
+## Anexo. Cinco olas con la frontera aparte 1.ª/2.ª (§8 de la regla; decisión posterior)
+
+> ⚠ **La separación de la 1.ª y la 2.ª ola es un criterio externo a la regla de
+> la curva, tomado después de ver el resultado de la regla principal** (A1 da 4
+> olas). Se justifica por el cambio de variante (ancestrales → B.1.1.519) en el
+> hueco de sep–nov 2020, no por la prominencia (ρ\* ≈ 1.46 < 2). ρ = 2, w = 28
+> y la salida de A1 no cambian. Salida aparte: `resultados/olas/A1_frontera/`.
+
+| Ola | Origen | Inicio | Pico | Fin | Pico (casos/d, 28 d) |
+|---|---|---|---|---|---|
+| 1.ª | §8 (separación posterior) | 2020-02-27 | 2020-07-20 | 2020-09-30 | 6 507 |
+| 2.ª | §8 (separación posterior) | 2020-10-01 | 2021-01-18 | 2021-05-15 | 14 839 |
+| 3.ª | A1 | 2021-05-16 | 2021-08-07 | 2021-12-09 | 17 406 |
+| 4.ª | A1 | 2021-12-10 | 2022-01-25 | 2022-04-24 | 36 978 |
+| 5.ª | A1 | 2022-04-25 | 2022-07-14 | 2023-02-28 | 25 001 |
+
+**Frontera 1.ª/2.ª:** 2020-10-01, media móvil de 28 d = 4 470.6 casos/día
+(mínimo entre los picos 2020-07-20 y 2021-01-18).
+
+**Sensibilidad a la ventana** (`sensibilidad_frontera.csv`): w = 21 → 2020-09-24
+(−7 d); w = 35 → 2020-09-27 (−4 d); ninguna de las ventanas declaradas para A1
+(21, 28, 35) mueve la frontera más de 10 días. Exploratorio: w = 14 → −8 d;
+w = 7 → 2020-11-16 (+46 d), porque sin suficiente suavizado el mínimo cae en
+un valle de reporte de noviembre.

@@ -50,6 +50,30 @@ def test_prominencia_coincide_con_scipy():
     assert np.allclose(p, p_ref)
 
 
+def test_frontera_1_2_es_argmin_media_movil_entre_picos():
+    """§8: la frontera 1.ª/2.ª es el argmin de la media móvil de 28 d (A1) entre
+    los dos picos, y cae en el hueco sep–nov 2020. No altera ρ ni w de A1."""
+    assert (olas.A1.rho, olas.A1.w) == (2.0, 28)
+    y = olas.serie_jhu(corregir_lote=True)
+    f = olas.frontera_1_2(y, olas.A1)
+    ybar = olas.suavizar(y, 28, "media")
+    entre = ybar.loc[f.pico_1:f.pico_2].iloc[1:-1]
+    assert f.frontera == entre.idxmin()
+    assert math.isclose(f.incidencia, float(entre.min()))
+    assert pd.Timestamp("2020-09-01") <= f.frontera <= pd.Timestamp("2020-11-30")
+    assert f.pico_1 < f.frontera < f.pico_2
+    assert f.pico_2 == olas.delimitar(y, 2.0, 28).picos[0]
+
+
+def test_olas_con_frontera_conserva_A1():
+    y = olas.serie_jhu(corregir_lote=True)
+    a1 = olas.delimitar(y, olas.A1.rho, olas.A1.w, olas.A1.metodo)
+    t, f, r5 = olas.olas_con_frontera(y, olas.A1)
+    assert len(t) == len(a1.picos) + 1 == 5
+    assert r5.fronteras[1:] == a1.fronteras and r5.picos[1:] == a1.picos
+    assert list(t.ola_convencional) == [1, 2, 3, 4, 5]
+
+
 if __name__ == "__main__":
     for nombre, f in list(globals().items()):
         if nombre.startswith("test_"):

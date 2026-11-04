@@ -6,7 +6,8 @@ Uso:
     python3 src/olas.py              # usa los CSV versionados en data/
     python3 src/olas.py --descargar  # vuelve a descargar las fuentes
 
-Salidas en resultados/olas/{declarada,A1}/.
+Salidas en resultados/olas/{declarada,A1}/ y, aparte, resultados/olas/A1_frontera/
+(§8: frontera 1.ª/2.ª, decisión posterior y externa a la regla de la curva).
 Dependencias: numpy, pandas, matplotlib (solo para la figura).
 """
 from __future__ import annotations
@@ -312,6 +313,91 @@ def rejilla(cfg: Config, y) -> pd.DataFrame:
         index=pd.Index(SENS_RHO, name="rho"))
 
 
+# --- §8: frontera aparte 1.ª/2.ª ola (decisión POSTERIOR, externa a la regla) --
+# No es un resultado de R1–R7 + A1: es un criterio externo (cambio de variante,
+# ancestrales → B.1.1.519) tomado después de ver que A1 fusiona la 1.ª y la 2.ª.
+# No modifica rho, w ni ninguna otra constante de A1.
+ETIQUETA_FRONTERA = ("criterio externo a la regla de la curva, tomado después "
+                     "de ver el resultado de la regla principal (§8)")
+SENS_W_FRONTERA = [7, 14, 21, 28, 35]
+VERIF_FRONTERA = (pd.Timestamp("2020-09-01"), pd.Timestamp("2020-11-30"))  # §8 F3
+
+
+@dataclass
+class Frontera12:
+    pico_1: pd.Timestamp
+    pico_2: pd.Timestamp
+    frontera: pd.Timestamp
+    incidencia: float
+    ybar: pd.Series
+
+
+def frontera_1_2(y: pd.Series, cfg: Config = A1) -> Frontera12:
+    """§8 F1–F2. pico_2 = primer pico aceptado por la regla (cfg); pico_1 = máximo
+    local de z más prominente (R5, sin umbral) anterior a pico_2; frontera =
+    argmin de la media móvil entre ambos (criterio de R6)."""
+    r = delimitar(y, cfg.rho, cfg.w, cfg.metodo)
+    ybar = r.ybar
+    z = np.log1p(ybar.to_numpy())
+    i2 = ybar.index.get_loc(r.picos[0])
+    cand = [i for i in maximos_locales(z) if i < i2]
+    if not cand:
+        raise ValueError("no hay pico candidato antes del primer pico aceptado")
+    i1 = max(cand, key=lambda i: prominencia(z, i))
+    v = ybar.to_numpy()
+    iv = i1 + 1 + int(np.argmin(v[i1 + 1:i2]))
+    return Frontera12(ybar.index[i1], ybar.index[i2], ybar.index[iv],
+                      float(v[iv]), ybar)
+
+
+def olas_con_frontera(y: pd.Series, cfg: Config = A1):
+    """5 olas = olas de A1 con la ola 1 dividida en la frontera de §8."""
+    r = delimitar(y, cfg.rho, cfg.w, cfg.metodo)
+    f = frontera_1_2(y, cfg)
+    r5 = Resultado(r.ybar, [f.pico_1] + r.picos, [f.frontera] + r.fronteras)
+    t = etiquetar(tabla_olas(y, r5))
+    t.insert(1, "origen", ["§8 (separación posterior)"] * 2
+             + ["A1"] * (len(t) - 2))
+    return t, f, r5
+
+
+def sensibilidad_frontera(y: pd.Series, cfg: Config = A1) -> pd.DataFrame:
+    """§8 F4: desplazamiento de la frontera 1.ª/2.ª al variar w."""
+    base = frontera_1_2(y, cfg).frontera
+    filas = []
+    for w in SENS_W_FRONTERA:
+        f = frontera_1_2(y, replace(cfg, w=w))
+        d = (f.frontera - base).days
+        filas.append(dict(w=w, pico_1=f.pico_1.date(), pico_2=f.pico_2.date(),
+                          frontera=f.frontera.date(),
+                          incidencia_frontera=round(f.incidencia),
+                          desp_dias=d, supera_10_dias=abs(d) > 10,
+                          en_sens_declarada_A1=w in cfg.sens_w))
+    return pd.DataFrame(filas)
+
+
+def ejecutar_frontera(cfg: Config = A1, figura_on: bool = True) -> dict:
+    out = SALIDA / f"{cfg.nombre}_frontera"
+    out.mkdir(parents=True, exist_ok=True)
+    y = serie_jhu(cfg.corregir_lote)
+    t, f, r5 = olas_con_frontera(y, cfg)
+    t["nota"] = ["separada por " + ETIQUETA_FRONTERA] * 2 + [""] * (len(t) - 2)
+    sens = sensibilidad_frontera(y, cfg)
+    fr = pd.DataFrame([dict(
+        pico_1a_ola=f.pico_1.date(), pico_2a_ola=f.pico_2.date(),
+        frontera=f.frontera.date(),
+        incidencia_media_movil=round(f.incidencia, 1), w=cfg.w,
+        dentro_sep_nov_2020=VERIF_FRONTERA[0] <= f.frontera <= VERIF_FRONTERA[1],
+        criterio=ETIQUETA_FRONTERA)])
+    t.to_csv(out / "olas.csv", index=False)
+    fr.to_csv(out / "frontera_1_2.csv", index=False)
+    sens.to_csv(out / "sensibilidad_frontera.csv", index=False)
+    if figura_on:
+        figura(replace(cfg, nombre=f"{cfg.nombre} + frontera §8 (posterior)"),
+               y, r5, out / "olas.png")
+    return dict(olas=t, frontera=fr, sens=sens)
+
+
 # --- Figura -----------------------------------------------------------------
 def figura(cfg: Config, y, base: Resultado, ruta: Path) -> None:
     import matplotlib
@@ -396,6 +482,12 @@ def main() -> None:
         print(r["crit"].to_string(index=False))
         print("\nRejilla n_olas (rho × w):")
         print(r["rejilla"].to_string())
+    r = ejecutar_frontera(A1, not args.sin_figura)
+    print(f"\n===== A1 + frontera 1.ª/2.ª ({ETIQUETA_FRONTERA}) =====")
+    print(r["olas"][["ola", "origen", "inicio", "pico", "fin", "duracion_dias",
+                     "incidencia_pico", "ola_convencional"]].to_string(index=False))
+    print(r["frontera"].to_string(index=False))
+    print(r["sens"].to_string(index=False))
 
 
 if __name__ == "__main__":
