@@ -59,11 +59,45 @@ SIRCOVID19MX/
 │   ├── fichas/           Análisis de lecturas clave
 │   └── fuentes/          PDFs organizados por tema
 │
+├── data/                 Fase F3: datos
+│   ├── raw/              Microdatos DGE y CSV del tablero (descarga manual, no versionados)
+│   ├── fuentes.csv       Procedencia: URL, fecha de descarga, SHA-256
+│   ├── processed/        Series generadas + manifiesto.json
+│   └── inventario_historicos.csv
+│
+├── src/                  Pipeline de datos (python -m src.<módulo>)
+│   ├── datos.py          Serie nacional por inicio de síntomas + hosp./defunciones
+│   ├── comparar_tablero.py  Diferencias vs. tablero CONAHCYT (PT1)
+│   ├── eda.py            Día de la semana, retrasos, truncamiento, pruebas
+│   └── series_historicas.py
+│
+├── docs/                 diccionario_datos.md, nota_diferencias.md, eda.md, inventario_historicos.md
+├── tests/                Pruebas con microdatos sintéticos (pytest)
 ├── v0-anterior/          Desarrollo anterior (archivo histórico)
 │
 └── scripts/              Utilidades
-    └── generar_referencias.py
+    ├── generar_referencias.py
+    ├── registrar_fuente.py
+    └── inventario_historicos.py
 ```
+
+---
+
+## 🗃️ Datos (F3)
+
+Fuente primaria: microdatos de la **DGE** (Secretaría de Salud, Datos Abiertos COVID-19).
+Fuente secundaria (solo para comparar con el PT1): **tablero CONAHCYT**, que deriva de la DGE.
+
+```bash
+pip install -r requirements.txt
+```
+
+```bash
+make todo    # verifica hashes, genera series, comprueba determinismo, compara, inventario y EDA
+```
+
+Los crudos se descargan a mano; ver [`data/raw/README.md`](data/raw/README.md). Definiciones y cambios de
+criterio 2020–2022 en [`docs/diccionario_datos.md`](docs/diccionario_datos.md).
 
 ---
 

@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Crudos: se versiona solo su procedencia (data/fuentes.csv)
+data/raw/**
+!data/raw/README.md
+!data/raw/*/
+!data/raw/*/*/
+!data/raw/**/.gitkeep
+
+# Intermedios regenerables; la serie principal y el manifiesto sí se versionan
+data/processed/cubos/
+data/processed/historicos/
+data/processed/eda/
+data/processed/comparacion_tablero.csv
