@@ -138,11 +138,16 @@ sintetico:
     unidad: "1"
     supuesto: false
     fuente: {tipo: regla, regla: "Cada serie termina en la primera semana después del pico en que la incidencia ESPERADA (sin ruido) baja del 1 % del pico. Decisión de Omar 2026-11-04."}
-  puntos_perfil:
-    valor: 21
-    unidad: puntos
+  perfil_paso_inicial:
+    valor: 0.002
+    unidad: "1 (escala log)"
     supuesto: false
-    fuente: {tipo: regla, regla: "21 puntos por perfil (medido: ~0.9 s por punto con LSODA). Mallas: R0 en [0.8*Reff, 1.5*Reff/(rho*s0)] y s0 en [0.7*rho*s0, 1] (rango no identificable analítico, src/identificabilidad.py, con holgura) y Reff en 0.8-1.2 veces su MLE; las cantidades rho*s0 y Reff se toman de la MLE."}
+    fuente: {tipo: regla, regla: "IC95 por perfil buscando los extremos (K02 p. 88): desde la MLE, pasos b = v*exp(+-0.002*2^j) hasta cruzar lmax - 1.92 o llegar al límite. Reemplaza la malla fija de 21 puntos, que no podía ubicar un IC más angosto que su paso (falló en la primera réplica, 2026-11-04). Límites: R0 en [0.8*Reff, 1.5*Reff/(rho*s0)], s0 en [0.7*rho*s0, 1], Reff en [0.5, 2]*Reff (src/recuperacion.py::limites_perfil)."}
+  perfil_biseccion:
+    valor: 8
+    unidad: pasos
+    supuesto: false
+    fuente: {tipo: regla, regla: "8 bisecciones (en escala log) entre el último punto dentro y el primero fuera del umbral: el extremo queda dentro de 2^-8 del intervalo de cruce."}
 
 real:
   # Olas (delimitación exacta: src/olas.py, se fija en F3 antes de ajustar):

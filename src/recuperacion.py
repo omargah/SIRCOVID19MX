@@ -10,17 +10,18 @@ Para un escenario (R0, s0, D) y una semilla:
      otra con ruido Poisson (decisión I2: comparar los dos modelos).
   3. Ajusta cada serie con las DOS verosimilitudes (NB y Poisson): 4
      combinaciones ruido x modelo.
-  4. En cada combinación: MLE, perfiles de R0, s0 y R_eff(0), IC95 por
-     perfil (umbral 1.92, Raue 2009 J01 p. 1924, ec. 8), clase del perfil
-     (identificable / cresta_plana), AIC, BIC y dispersión de Pearson.
+  4. En cada combinación: MLE, IC95 por perfil de R0, s0 y R_eff(0)
+     buscando los extremos (umbral 1.92, Raue 2009 J01 p. 1924, ec. 8;
+     Venzon y Moolgavkar 1988 K02 p. 88), clase del perfil (identificable /
+     cresta_plana), AIC, BIC y dispersión de Pearson.
   5. Opcionalmente agrega una encuesta serológica (escenario "casos_sero").
 
 Los resúmenes (sesgo, cobertura) se calculan aparte, a partir de las
 réplicas guardadas (scripts/resumen_recuperacion.py): ninguna cifra se
 escribe a mano.
 
-Cobertura con IC abierto: si el perfil no cruza el umbral dentro de la
-malla, el extremo es el borde de la malla (src/identificabilidad.py). La
+Cobertura con IC abierto: si el perfil no cruza el umbral antes del límite
+del recorrido, el extremo es ese límite (limites_perfil). La
 verdad "queda cubierta" si cae entre los extremos reportados; para R0 y
 s0 con casos solos eso es casi trivial y por eso se reporta aparte la
 fracción de IC abiertos.
@@ -52,22 +53,22 @@ def semanas_hasta_fin(theta, gamma, N, fraccion_pico, max_semanas=520):
     return pico + int(bajo[0]) + 1
 
 
-def mallas_perfil(mle_theta, n_puntos):
-    """Mallas de los perfiles a partir de cantidades identificables de la MLE.
+def limites_perfil(mle_theta):
+    """Límites del recorrido de cada perfil, de cantidades identificables de la MLE.
 
     Por la simetría de escala de H1 (src/identificabilidad.py), con casos
     solos R0 puede valer c*R0 con c en [s0, 1/rho], es decir R0 en
     [Reff, Reff/(rho*s0)], y s0 en [rho*s0, 1]. Reff y rho*s0 son
-    invariantes, así que se toman de la MLE. Las mallas rebasan esos rangos
-    para ver dónde el perfil deja de ser plano.
+    invariantes, así que se toman de la MLE. Los límites rebasan esos rangos
+    (factores 0.8 y 1.5; 0.7 para s0) para ver dónde el perfil deja de ser
+    plano; s0 no puede pasar de 1. Reff (identificable): 0.5 a 2 veces su MLE.
     """
-    th = mle_theta
-    reff = V.reff(th)
-    rho_s0 = th["rho"] * th["s0"]
+    reff = V.reff(mle_theta)
+    rho_s0 = mle_theta["rho"] * mle_theta["s0"]
     return {
-        "R0": np.geomspace(max(0.8 * reff, 1e-3), 1.5 * reff / rho_s0, n_puntos),
-        "s0": np.geomspace(0.7 * rho_s0, 1.0, n_puntos),
-        "Reff": np.linspace(0.8 * reff, 1.2 * reff, n_puntos),
+        "R0": (0.8 * reff, 1.5 * reff / rho_s0),
+        "s0": (0.7 * rho_s0, 1.0),
+        "Reff": (0.5 * reff, 2.0 * reff),
     }
 
 
@@ -89,40 +90,43 @@ def simular(theta, gamma, N, n_semanas, ruido, rng, sero_diseno=None):
     return d
 
 
-def ajustar_y_perfilar(d, gamma, N, modelo, inicio, n_puntos, rng, perfiles=("R0", "s0", "Reff")):
-    """MLE + perfiles + criterios de comparación para una serie y un modelo."""
+def ajustar_y_perfilar(d, gamma, N, modelo, inicio, rng, perfiles=("R0", "s0", "Reff"),
+                       max_rondas=3, paso_inicial=0.002, n_biseccion=8):
+    """MLE + IC95 por perfil (ic_perfil_raiz) + criterios de comparación.
+
+    Si algún perfil encuentra un punto con más verosimilitud que la MLE, la
+    MLE no era el máximo global: se reajusta desde ese punto y se repiten
+    los perfiles (hasta max_rondas). Se registra cuántas rondas hubo.
+    """
     ini = {p: inicio[p] for p in V.PARAMETROS_POR_MODELO[modelo]}
     mle = V.ajustar(d, gamma, N, ini, n_arranques=3, rng=rng, modelo=modelo)
-    th = mle["theta"]
-    mallas = mallas_perfil(th, n_puntos)
-    out = {
-        "theta": th, "Reff": V.reff(th), "logvero": mle["logvero"],
-        "n_libres": mle["n_libres"], "perfiles": {},
-    }
-    lmax = mle["logvero"]
-    for nombre in perfiles:
-        lp, _ = V.perfil(nombre, mallas[nombre], d, gamma, N, mle, modelo=modelo)
-        lmax = max(lmax, float(np.nanmax(lp)))
-        out["perfiles"][nombre] = {"malla": mallas[nombre].tolist(), "lp": lp.tolist()}
-    # Si un punto del perfil supera a la MLE, la MLE no era el máximo global:
-    # se usa el máximo de todo lo evaluado y se deja registrado.
-    out["lmax"] = lmax
-    out["mle_no_era_global"] = bool(lmax > mle["logvero"] + 1e-6)
-    # Rango no identificable analítico (con casos solos), de cantidades
-    # identificables de la MLE: R0 en [Reff, Reff/(rho*s0)], s0 en [rho*s0, 1].
+    for ronda in range(1, max_rondas + 1):
+        th = mle["theta"]
+        lim = limites_perfil(th)
+        pfs = {nm: V.ic_perfil_raiz(nm, d, gamma, N, mle, lim[nm], modelo=modelo,
+                                    paso_inicial=paso_inicial, n_biseccion=n_biseccion)
+               for nm in perfiles}
+        lp_mejor, th_mejor = max((pf["mejor"] for pf in pfs.values()), key=lambda x: x[0])
+        if lp_mejor <= mle["logvero"] + 1e-3 or ronda == max_rondas:
+            break
+        mle = V.ajustar(d, gamma, N, th_mejor, n_arranques=0, rng=rng, modelo=modelo)
+    out = {"theta": th, "Reff": V.reff(th), "logvero": mle["logvero"], "n_libres": mle["n_libres"],
+           "rondas": ronda, "mle_no_era_global": bool(lp_mejor > mle["logvero"] + 1e-3), "perfiles": {}}
     reff, rho_s0 = V.reff(th), th["rho"] * th["s0"]
     rango = {"R0": (reff, reff / rho_s0), "s0": (rho_s0, 1.0)}
     valor_mle = {"R0": th["R0"], "s0": th["s0"], "Reff": reff}
-    for nombre, pf in out["perfiles"].items():
-        pf.update(ident.clasificar_perfil(np.array(pf["malla"]), np.array(pf["lp"]), lmax))
+    for nm, pf in pfs.items():
+        pf = dict(pf)
+        pf.pop("mejor")
+        pf["limites"] = list(lim[nm])
         # Amplitud relativa del IC95 (criterio de rechazo de H1: comparar la
         # de R0 con la de R_eff(0)). Se reporta; el umbral de "comparable"
         # no está fijado.
-        pf["amplitud_relativa"] = (pf["sup"] - pf["inf"]) / valor_mle[nombre]
-        if nombre in rango and rango[nombre][0] < rango[nombre][1]:
-            pf["rango_analitico"] = list(rango[nombre])
-            pf["fraccion_rango_cubierta"] = ident.fraccion_rango_cubierta(
-                pf["inf"], pf["sup"], *rango[nombre])
+        pf["amplitud_relativa"] = (pf["sup"] - pf["inf"]) / valor_mle[nm]
+        if nm in rango and rango[nm][0] < rango[nm][1]:
+            pf["rango_analitico"] = list(rango[nm])
+            pf["fraccion_rango_cubierta"] = ident.fraccion_rango_cubierta(pf["inf"], pf["sup"], *rango[nm])
+        out["perfiles"][nm] = pf
     n = len(d["casos"])
     mu = V.media_casos(th, gamma, N, n)
     p = mle["n_libres"]
@@ -132,7 +136,7 @@ def ajustar_y_perfilar(d, gamma, N, modelo, inicio, n_puntos, rng, perfiles=("R0
     return out
 
 
-def replica(escenario, P, semilla, con_sero, n_puntos=None, combinaciones=None):
+def replica(escenario, P, semilla, con_sero, combinaciones=None):
     """Una réplica completa de un escenario. Devuelve un dict serializable.
 
     escenario : {"R0", "s0", "D"}; el resto de la verdad (i0, rho, k, N)
@@ -146,7 +150,6 @@ def replica(escenario, P, semilla, con_sero, n_puntos=None, combinaciones=None):
     verdad = {"R0": escenario["R0"], "s0": escenario["s0"], "i0": P["i0"],
               "rho": P["rho"], "k": P["k"]}
     n_semanas = semanas_hasta_fin(verdad, gamma, N, P["fin_ola_fraccion_pico"])
-    n_puntos = n_puntos or P["puntos_perfil"]
     combinaciones = combinaciones or [(r, m) for r in RUIDOS for m in V.MODELOS]
     # Arranque lejos de la verdad (no centrado en la respuesta) e igual en
     # todos los escenarios: R0 = 4, s0 = 0.8, i0 = i0/3, rho = 0.3, k = 5.
@@ -159,6 +162,11 @@ def replica(escenario, P, semilla, con_sero, n_puntos=None, combinaciones=None):
     res = {"escenario": dict(escenario), "verdad": verdad, "Reff_verdad": V.reff(verdad),
            "n_semanas": n_semanas, "con_sero": bool(con_sero), "ajustes": {}}
     for ruido, modelo in combinaciones:
-        res["ajustes"][f"{ruido}|{modelo}"] = ajustar_y_perfilar(
-            series[ruido], gamma, N, modelo, inicio, n_puntos, rng)
+        clave = f"{ruido}|{modelo}"
+        try:
+            res["ajustes"][clave] = ajustar_y_perfilar(
+                series[ruido], gamma, N, modelo, inicio, rng,
+                paso_inicial=P["perfil_paso_inicial"], n_biseccion=P["perfil_biseccion"])
+        except Exception as e:  # se registra por combinación; no se descarta la réplica
+            res.setdefault("errores_ajuste", {})[clave] = f"{type(e).__name__}: {e}"
     return res

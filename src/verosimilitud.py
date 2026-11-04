@@ -330,3 +330,105 @@ def bic(logvero, n_parametros, n_datos):
     SIN FUENTE con PDF en la bibliografía (decisión I4 lo pide junto al AIC):
     pedir al chat 01 una fuente con página."""
     return n_parametros * np.log(n_datos) - 2.0 * logvero
+
+
+# ---------------------------------------------------------------------------
+# IC95 por perfil buscando directamente los extremos
+# ---------------------------------------------------------------------------
+
+UMBRAL_95 = 1.920729410347062  # chi2_{1,0.95}/2 (= identificabilidad.UMBRAL_95)
+
+
+def _inicio_sobre_la_cresta(nombre, b, theta):
+    """Punto de arranque para el ajuste con nombre = b, sobre la cresta de H1.
+
+    Con casos solos, (R0, s0, i0, rho) y (c*R0, s0/c, i0/c, c*rho) dan la
+    MISMA incidencia (src/identificabilidad.py). Al fijar R0 = b se toma
+    c = b/R0; al fijar s0 = b, c = s0/b. Ese arranque ya está en el máximo
+    condicional (casos solos) o cerca (con serología), y evita que el
+    optimizador se quede varado lejos de la cresta: medido el 2026-11-04,
+    fijar R0 = 6 desde la MLE (R0 = 2) sin este arranque agotó 8105
+    evaluaciones y quedó en log L = -2.8e6. c se recorta para no violar
+    s0 <= 1 ni rho < 1. Para "Reff" no se cambia nada (R0 se deriva).
+    """
+    if nombre not in ("R0", "s0"):
+        return theta
+    c = b / theta["R0"] if nombre == "R0" else theta["s0"] / b
+    c = min(max(c, theta["s0"] * (1 + 1e-9)), (1 - 1e-6) / theta["rho"])
+    nuevo = dict(theta)
+    nuevo["R0"], nuevo["s0"] = theta["R0"] * c, theta["s0"] / c
+    nuevo["i0"], nuevo["rho"] = theta["i0"] / c, theta["rho"] * c
+    return nuevo
+
+
+def ic_perfil_raiz(nombre, datos, gamma, N, mle, limites, modelo="nb", lmax=None,
+                   paso_inicial=0.002, n_biseccion=8):
+    """Extremos del IC95 por perfil como ceros de lp(b) - l*, l* = lmax - 1.92.
+
+    Es el procedimiento "derivado directamente de la definición" que
+    describen Venzon y Moolgavkar 1988 (K02, p. 88): buscar los ceros de
+    lp(b) - l*, con l* = l(MLE) - q_1(0.95)/2 (umbral de Raue 2009, J01,
+    p. 1924, ec. 8). No usa una malla fija: con una malla, un IC más angosto
+    que el paso de la malla no se puede ubicar (fue el error de la primera
+    corrida, 2026-11-04).
+
+    Por cada lado: desde el valor de la MLE se avanza en escala log,
+    b_j = v * exp(+-paso_inicial * 2^j), hasta que lp(b) < l* (cruce
+    encontrado: bisección n_biseccion veces entre el último punto dentro y
+    el primero fuera) o hasta el límite (si lp(límite) >= l*, el IC queda
+    ABIERTO de ese lado y su extremo es el límite). Cada ajuste arranca del
+    anterior del mismo lado (continuación).
+
+    limites : (lo, hi) del recorrido; el extremo abierto se reporta ahí.
+    Devuelve dict con inf, sup, abierto_abajo, abierto_arriba, clase,
+    caida_max (lmax - lp mínimo evaluado), evaluaciones [(b, lp)] y
+    mejor = (lp, theta) del mejor punto visto (si supera a lmax, la MLE no
+    era el máximo global y quien llama debe reajustar).
+    """
+    lmax = mle["logvero"] if lmax is None else lmax
+    nivel = lmax - UMBRAL_95
+    v0 = reff(mle["theta"]) if nombre == "Reff" else mle["theta"][nombre]
+    lo, hi = limites
+    evals, mejor = [], (mle["logvero"], mle["theta"])
+
+    def lp_en(b, inicio):
+        inicio = _inicio_sobre_la_cresta(nombre, b, inicio)
+        r = ajustar(datos, gamma, N, inicio, fijos={nombre: b}, n_arranques=0, modelo=modelo)
+        evals.append((float(b), r["logvero"]))
+        return r["logvero"], r["theta"]
+
+    extremos = {}
+    for signo, limite in ((-1, lo), (+1, hi)):
+        b_in, th_in, j = v0, mle["theta"], 0
+        while True:
+            b = v0 * np.exp(signo * paso_inicial * 2.0**j)
+            llego = (b <= limite) if signo < 0 else (b >= limite)
+            if llego:
+                b = limite
+            lp, th = lp_en(b, th_in)
+            if lp > mejor[0]:
+                mejor = (lp, th)
+            if lp < nivel:
+                # Cruce entre b_in (dentro) y b (fuera): bisección en escala log.
+                a_, c_ = b_in, b
+                for _ in range(n_biseccion):
+                    m = np.sqrt(a_ * c_)
+                    lpm, thm = lp_en(m, th_in)
+                    if lpm > mejor[0]:
+                        mejor = (lpm, thm)
+                    if lpm >= nivel:
+                        a_, th_in = m, thm
+                    else:
+                        c_ = m
+                extremos[signo] = (float(np.sqrt(a_ * c_)), False)
+                break
+            if llego:
+                extremos[signo] = (float(limite), True)
+                break
+            b_in, th_in, j = b, th, j + 1
+    caida = float(lmax - min(l for _, l in evals)) if evals else 0.0
+    inf, aa = extremos[-1]
+    sup, ab = extremos[+1]
+    return {"inf": inf, "sup": sup, "abierto_abajo": aa, "abierto_arriba": ab,
+            "clase": "cresta_plana" if (aa or ab) else "identificable",
+            "caida_max": caida, "evaluaciones": evals, "mejor": mejor}

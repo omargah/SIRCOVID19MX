@@ -108,7 +108,8 @@ def main():
         "commit": commit, "arbol_con_cambios_sin_commit": sucio, "datos": a.datos,
         "escenarios": escs, "replicas": n_rep, "semilla": P["semilla"],
         "verdad_fija": {k: P[k] for k in ("N", "i0", "rho", "k")},
-        "sero": P["sero"] if con_sero else None, "puntos_perfil": P["puntos_perfil"],
+        "sero": P["sero"] if con_sero else None, "perfil_paso_inicial": P["perfil_paso_inicial"],
+        "perfil_biseccion": P["perfil_biseccion"],
         "fin_ola_fraccion_pico": P["fin_ola_fraccion_pico"],
     }), indent=1))
 
