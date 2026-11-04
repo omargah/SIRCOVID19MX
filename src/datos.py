@@ -16,9 +16,13 @@ Qué rechaza el cargador (lanza ParametroSinFuente)
     - institucional: sin institución, documento, año o ubicación;
     - regla: regla vacía o `depende_de` con parámetros inexistentes.
 * supuesto: true sin justificación o sin rango de sensibilidad válido.
+* sensibilidad en forma lista con un rango sin tipo, clave o página, o con
+  una clave que no está en INDICE.csv.
 * D_* (tiempo característico de gamma = 1/D) que sea incubación u otra cosa
   distinta de periodo infeccioso / intervalo de generación, definiciones
   mezcladas entre olas, o un `gamma` declarado aparte junto a D_*.
+* D_* sin `estimador`, o con estimador distinto de "intrinseco" y
+  supuesto: false (solo el GI intrínseco cuenta como fuente de D).
 """
 
 from __future__ import annotations
@@ -40,6 +44,10 @@ _PATRON_DOI = re.compile(r"^10\.\d{4,9}/\S+$")
 # Lo único que puede ser D en un SIR: el tiempo medio en I (periodo
 # infeccioso) o el intervalo de generación, que en el SIR coincide con 1/gamma.
 DEFINICIONES_D = ("periodo_infeccioso", "intervalo_generacion")
+# Cómo se estimó el intervalo de generación. La decisión del 2026-11-03 es
+# D = GI INTRÍNSECO; uno que no lo es (p. ej. G02, estimado bajo
+# aislamiento y cuarentena) solo entra como supuesto (decisión 2026-11-04).
+ESTIMADORES_D = ("intrinseco", "realizado_bajo_contencion")
 PREFIJO_D = "D_"
 
 
@@ -96,17 +104,60 @@ def _validar_fuente(nombre, fuente, indice, nombres_seccion):
         )
 
 
-def _validar_supuesto(nombre, entrada):
+def _validar_rango(nombre, r, indice, con_fuente):
+    """Un rango de sensibilidad {min, max} y, si es de la forma lista, su fuente."""
+    if not isinstance(r, dict) or not (_es_numero(r.get("min")) and _es_numero(r.get("max"))):
+        raise ParametroSinFuente(f"{nombre}: rango de sensibilidad sin 'min'/'max' numéricos")
+    if r["min"] > r["max"]:
+        raise ParametroSinFuente(f"{nombre}: sensibilidad con min > max")
+    if con_fuente:
+        for campo in ("tipo", "clave", "pagina"):
+            if _vacio(r.get(campo)):
+                raise ParametroSinFuente(f"{nombre}: rango de sensibilidad sin '{campo}'")
+        if str(r["clave"]).strip() not in indice:
+            raise ParametroSinFuente(
+                f"{nombre}: clave '{r['clave']}' del rango no está en bibliografia/INDICE.csv"
+            )
+
+
+def _rangos(entrada):
+    """Lista de rangos de una entrada (la forma dict antigua es una lista de uno)."""
+    sens = entrada.get("sensibilidad")
+    if sens is None:
+        return []
+    return sens if isinstance(sens, list) else [sens]
+
+
+def _validar_sensibilidad(nombre, entrada, indice):
+    """Dos formas válidas de `sensibilidad`:
+
+    * {min, max}: un rango (forma original de stoic-galileo).
+    * [{min, max, tipo, clave, pagina, nota}, ...]: varios rangos, cada uno
+      con su fuente (decisión de Omar 2026-11-04, para D: CrI95 de la fuente
+      del valor base + rango de Byrne 2020). La clave debe estar en INDICE.csv.
+    El valor (si es número) debe caer dentro de la envolvente de los rangos.
+    """
+    sens = entrada.get("sensibilidad")
+    if isinstance(sens, list):
+        if not sens:
+            raise ParametroSinFuente(f"{nombre}: lista de sensibilidad vacía")
+        for r in sens:
+            _validar_rango(nombre, r, indice, con_fuente=True)
+    else:
+        _validar_rango(nombre, sens, indice, con_fuente=False)
+    lo = min(r["min"] for r in _rangos(entrada))
+    hi = max(r["max"] for r in _rangos(entrada))
+    v = entrada["valor"]
+    if _es_numero(v) and not lo <= v <= hi:
+        raise ParametroSinFuente(f"{nombre}: valor {v} fuera de su rango de sensibilidad")
+
+
+def _validar_supuesto(nombre, entrada, indice):
     if _vacio(entrada.get("justificacion")):
         raise ParametroSinFuente(f"{nombre}: supuesto sin 'justificacion'")
-    sens = entrada.get("sensibilidad")
-    if not isinstance(sens, dict) or not (_es_numero(sens.get("min")) and _es_numero(sens.get("max"))):
+    if entrada.get("sensibilidad") is None:
         raise ParametroSinFuente(f"{nombre}: supuesto sin rango 'sensibilidad: {{min, max}}' numérico")
-    if sens["min"] > sens["max"]:
-        raise ParametroSinFuente(f"{nombre}: sensibilidad con min > max")
-    v = entrada["valor"]
-    if _es_numero(v) and not sens["min"] <= v <= sens["max"]:
-        raise ParametroSinFuente(f"{nombre}: valor {v} fuera de su rango de sensibilidad")
+    _validar_sensibilidad(nombre, entrada, indice)
 
 
 def _validar_entrada(nombre, entrada, indice, nombres_seccion):
@@ -119,9 +170,13 @@ def _validar_entrada(nombre, entrada, indice, nombres_seccion):
     if entrada["supuesto"] not in (True, False):
         raise ParametroSinFuente(f"{nombre}: 'supuesto' debe ser true o false")
     if entrada["supuesto"]:
-        _validar_supuesto(nombre, entrada)
+        _validar_supuesto(nombre, entrada, indice)
     else:
         _validar_fuente(nombre, entrada.get("fuente"), indice, nombres_seccion)
+        # Un parámetro con fuente también puede declarar sensibilidad (D: su
+        # CrI95 y el rango de Byrne); si la declara, se valida igual.
+        if entrada.get("sensibilidad") is not None:
+            _validar_sensibilidad(nombre, entrada, indice)
 
 
 def _validar_D(seccion, entradas):
@@ -134,6 +189,15 @@ def _validar_D(seccion, entradas):
             raise ParametroSinFuente(
                 f"{seccion}.{n}: D debe ser {' o '.join(DEFINICIONES_D)}, "
                 f"no '{e.get('definicion')}' (la incubación no es el tiempo en I)"
+            )
+        if e.get("estimador") not in ESTIMADORES_D:
+            raise ParametroSinFuente(
+                f"{seccion}.{n}: 'estimador' debe ser {' o '.join(ESTIMADORES_D)}"
+            )
+        if e["estimador"] != "intrinseco" and not e["supuesto"]:
+            raise ParametroSinFuente(
+                f"{seccion}.{n}: un D que no es intervalo de generación intrínseco "
+                "solo puede entrar como supuesto: true"
             )
         if e.get("unidad") != "dia":
             raise ParametroSinFuente(f"{seccion}.{n}: D debe estar en 'dia'")
@@ -193,14 +257,27 @@ def rangos_sensibilidad(seccion, archivo=ARCHIVO_PARAMETROS):
     """{nombre: (min, max)} de cada parámetro marcado supuesto: true.
 
     Es la lista de entrada del análisis de sensibilidad: todo lo que no tiene
-    fuente se barre en su rango en vez de tratarse como dato.
+    fuente se barre en su rango en vez de tratarse como dato. Si la entrada
+    trae varios rangos (forma lista), aquí se devuelve su envolvente; el
+    detalle con fuente de cada rango está en rangos_sensibilidad_detalle.
     """
     entradas = cargar_entradas(archivo)[seccion]
     return {
-        n: (e["sensibilidad"]["min"], e["sensibilidad"]["max"])
+        n: (min(r["min"] for r in _rangos(e)), max(r["max"] for r in _rangos(e)))
         for n, e in entradas.items()
         if e["supuesto"]
     }
+
+
+def rangos_sensibilidad_detalle(seccion, archivo=ARCHIVO_PARAMETROS):
+    """{nombre: [rango, ...]} de TODA entrada que declare sensibilidad.
+
+    Incluye parámetros con fuente que también se barren (D_ola3, D_ola4:
+    su CrI95 y el rango de Byrne). Cada rango es el dict del YAML
+    (min, max y, en la forma lista, tipo, clave, pagina, nota).
+    """
+    entradas = cargar_entradas(archivo)[seccion]
+    return {n: [dict(r) for r in _rangos(e)] for n, e in entradas.items() if _rangos(e)}
 
 
 def gamma_ola(parametros, ola):

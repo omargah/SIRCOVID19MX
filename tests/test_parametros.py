@@ -49,7 +49,10 @@ def test_real_supuestos_entran_a_sensibilidad():
     rangos = datos.rangos_sensibilidad("real")
     supuestos = {n for n, e in entradas.items() if e["supuesto"]}
     assert set(rangos) == supuestos
-    assert {"D_ola1", "D_ola4", "rho_ola2_5"} <= supuestos
+    # Desde 2026-11-04 D_ola3 y D_ola4 tienen fuente (G05, G06); D_ola1,
+    # D_ola2 y D_ola5 siguen como supuestos (decisiones de Omar).
+    assert {"D_ola1", "D_ola2", "D_ola5", "rho_ola2_5"} <= supuestos
+    assert not entradas["D_ola4"]["supuesto"]
 
 
 def test_real_D_un_solo_tipo_y_no_incubacion():
@@ -154,8 +157,9 @@ def test_supuesto_fuera_de_rango_se_rechaza(tmp_path):
 
 # --- D: el mismo para estimar y simular; nunca incubación ------------------
 
-def _D(definicion="intervalo_generacion", valor=5.0):
-    return _entrada(valor=valor, unidad="dia", definicion=definicion)
+def _D(definicion="intervalo_generacion", valor=5.0, estimador="intrinseco"):
+    # `estimador` es obligatorio desde 2026-11-04 (D = GI intrínseco).
+    return _entrada(valor=valor, unidad="dia", definicion=definicion, estimador=estimador)
 
 
 def test_D_incubacion_se_rechaza(tmp_path):
@@ -182,3 +186,65 @@ def test_rechaza_tambien_errores_en_otra_seccion(tmp_path):
     archivo = _escribir(tmp_path, malo)
     with pytest.raises(datos.ParametroSinFuente, match="b.y"):
         datos.cargar_parametros("a", archivo)
+
+
+# --- D por variante y sensibilidad con fuente (2026-11-04) ---------------
+
+def test_real_D_valores_y_fuentes():
+    """Valores verificados contra los PDF: G02 p. 1, G05 p. 603, G06 p. 1."""
+    e = datos.cargar_entradas()["real"]
+    assert [e[f"D_ola{i}"]["valor"] for i in range(1, 6)] == [5.20, 5.20, 4.7, 6.84, 6.84]
+    assert e["D_ola3"]["fuente"]["clave"] == "G05" and e["D_ola4"]["fuente"]["clave"] == "G06"
+    # Ganyani (G02) no es intrínseco: solo puede ser supuesto.
+    assert e["D_ola1"]["estimador"] == "realizado_bajo_contencion" and e["D_ola1"]["supuesto"]
+
+
+def test_real_D_nunca_valores_prohibidos():
+    """Ningún D base es la incubación (6.4), dos PCR negativas (13.4) ni el GI realizado (3.59)."""
+    e = datos.cargar_entradas()["real"]
+    for i in range(1, 6):
+        assert e[f"D_ola{i}"]["valor"] not in (6.4, 13.4, 3.59)
+
+
+def test_real_D_sensibilidad_CrI_mas_Byrne():
+    """Cada D trae su CrI95 y el rango de Byrne (G04, 6.5-9.5), rotulados con fuente."""
+    det = datos.rangos_sensibilidad_detalle("real")
+    for i in range(1, 6):
+        rangos = det[f"D_ola{i}"]
+        assert any(r["tipo"] == "CrI95" for r in rangos)
+        byrne = [r for r in rangos if r["clave"] == "G04"]
+        assert len(byrne) == 1 and (byrne[0]["min"], byrne[0]["max"]) == (6.5, 9.5)
+        assert all(r["tipo"] != "IC95" for r in rangos)  # son CrI, no IC
+
+
+def test_D_no_intrinseco_con_fuente_se_rechaza(tmp_path):
+    e = _D(estimador="realizado_bajo_contencion")
+    _rechaza(tmp_path, {"D_ola1": e}, "intrínseco")
+
+
+def test_D_sin_estimador_se_rechaza(tmp_path):
+    e = _D()
+    del e["estimador"]
+    _rechaza(tmp_path, {"D_ola1": e}, "estimador")
+
+
+def test_sensibilidad_lista_sin_fuente_se_rechaza(tmp_path):
+    e = _entrada(supuesto=True, justificacion="x",
+                 sensibilidad=[{"min": 0.1, "max": 0.5, "tipo": "CrI95", "pagina": "p. 1"}])
+    del e["fuente"]
+    _rechaza(tmp_path, {"x": e}, "clave")
+
+
+def test_sensibilidad_lista_con_clave_inexistente_se_rechaza(tmp_path):
+    e = _entrada(sensibilidad=[{"min": 0.1, "max": 5, "tipo": "CrI95", "clave": "ZZ99", "pagina": "p. 1"}])
+    _rechaza(tmp_path, {"x": e}, "INDICE")
+
+
+def test_sensibilidad_lista_envolvente_y_detalle(tmp_path):
+    e = _entrada(valor=0.3, supuesto=True, justificacion="x", sensibilidad=[
+        {"min": 0.1, "max": 0.4, "tipo": "CrI95", "clave": "G02", "pagina": "p. 1"},
+        {"min": 0.35, "max": 0.9, "tipo": "rango", "clave": "G04", "pagina": "p. 1"}])
+    del e["fuente"]
+    archivo = _escribir(tmp_path, {"s": {"x": e}})
+    assert datos.rangos_sensibilidad("s", archivo) == {"x": (0.1, 0.9)}
+    assert [r["clave"] for r in datos.rangos_sensibilidad_detalle("s", archivo)["x"]] == ["G02", "G04"]

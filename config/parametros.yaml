@@ -144,56 +144,92 @@ real:
     fuente_candidata: {institucion: CONAPO, documento: "Proyecciones de la Población de México y de las Entidades Federativas 2016-2050"}
 
   # --- D: intervalo de generación medio por ola/variante (gamma = 1/D) ------
+  # D es una APROXIMACIÓN de 1/gamma. En el SIR el tiempo en I es
+  # exponencial con media 1/gamma y el intervalo de generación medio es
+  # también 1/gamma (Wallinga y Lipsitch 2007, F01, p. 601, ec. 3.1). En la
+  # realidad hay latencia y el periodo infeccioso no es exponencial, así que
+  # NINGÚN dato mide "1/gamma"; se toma el intervalo de generación INTRÍNSECO
+  # (población totalmente susceptible) porque es lo que liga r con R
+  # (Hart 2022, G05, p. 605; Manica 2022, G06, p. 1).
+  #
+  # Campos nuevos (decisión de Omar, 2026-11-04):
+  #   estimador: intrinseco | realizado_bajo_contencion
+  #       Si no es intrínseco, la entrada DEBE ser supuesto: true.
+  #   sensibilidad: LISTA de rangos, cada uno con su fuente:
+  #       {min, max, tipo, clave, pagina, nota}
+  #       tipo CrI95 = intervalo de credibilidad bayesiano del 95 % (todos
+  #       los de G02, G05 y G06 lo son; NO son IC de confianza).
+  #   El rango de Byrne 2020 (G04) solo cubre D MÁS LARGOS que los D base
+  #   (6.5-9.5 d frente a 4.7-6.84 d): la sensibilidad es asimétrica.
+  # NO son D (y src/datos.py no los acepta como definicion): incubación
+  # (6.4 d, G03), tiempo a dos PCR negativas (13.4 d, G04), intervalo de
+  # generación realizado en hogares de Ómicron (3.59 d, G06).
   D_ola1:
-    valor: null
+    valor: 5.20
     unidad: dia
     definicion: intervalo_generacion
+    estimador: realizado_bajo_contencion
     ola: ola1
     variante: ancestral
     supuesto: true
-    justificacion: "Intervalo de generación medio del linaje ancestral. Copiar valor y página de G02 (Ganyani et al. 2020) desde la hoja Parámetros."
-    sensibilidad: {min: 4.0, max: 7.0}
-    fuente_candidata: {clave: G02, doi: "10.2807/1560-7917.ES.2020.25.17.2000257"}
+    justificacion: "No hay GI intrínseco del linaje ancestral en la bibliografía con PDF. G02 (Ganyani 2020) estima 5.20 d en Singapur con aislamiento y cuarentena vigentes (p. 1) y sin corregir el acortamiento por agotamiento de susceptibles (p. 6): no es intrínseco. Decisión de Omar 2026-11-04: se usa como supuesto con sensibilidad."
+    fuente_candidata: {clave: G02, doi: "10.2807/1560-7917.ES.2020.25.17.2000257", pagina: "p. 1 (resumen); Tabla 1, p. 5"}
+    sensibilidad:
+      - {min: 3.78, max: 6.78, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Singapur, CrI95 de la media 5.20"}
+      - {min: 3.01, max: 4.91, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Tianjin, media 3.95 (alternativa inferior)"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Mediana aproximada del periodo infeccioso en asintomáticos, un solo estudio. Solo cubre D más largos que el base."}
   D_ola2:
-    valor: null
+    valor: 5.20
     unidad: dia
     definicion: intervalo_generacion
+    estimador: realizado_bajo_contencion
     ola: ola2
-    variante: ancestral
+    variante: ancestral (B.1.1.519)
     supuesto: true
-    justificacion: "Mismo linaje que la ola 1; regla prevista: D_ola2 = D_ola1 (B.1.1.519 sin estimación propia de Tg)."
-    sensibilidad: {min: 4.0, max: 7.0}
-    fuente_candidata: {clave: G02, doi: "10.2807/1560-7917.ES.2020.25.17.2000257"}
+    justificacion: "Linaje ancestral; B.1.1.519 no tiene GI propio en la bibliografía. Regla: D_ola2 = D_ola1 (hereda que G02 no es intrínseco). Alpha (G05) no dominó ninguna ola en México: entra solo a la sensibilidad. Decisión de Omar 2026-11-04."
+    fuente_candidata: {clave: G02, doi: "10.2807/1560-7917.ES.2020.25.17.2000257", pagina: "p. 1 (resumen); Tabla 1, p. 5"}
+    sensibilidad:
+      - {min: 3.78, max: 6.78, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Singapur, CrI95 de la media 5.20"}
+      - {min: 3.01, max: 4.91, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Tianjin, media 3.95"}
+      - {min: 4.7, max: 6.5, tipo: CrI95, clave: G05, pagina: "p. 603 (Summary); p. 606 (Results)", nota: "Alpha, media intrínseca 5.5"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
   D_ola3:
-    valor: null
+    valor: 4.7
     unidad: dia
     definicion: intervalo_generacion
+    estimador: intrinseco
     ola: ola3
-    variante: Delta
-    supuesto: true
-    justificacion: "Intervalo de generación medio de Delta. Copiar valor y página de G05 (Hart et al. 2022) desde la hoja Parámetros."
-    sensibilidad: {min: 4.0, max: 7.0}
-    fuente_candidata: {clave: G05, doi: "10.1016/S1473-3099(22)00001-9"}
+    variante: Delta (B.1.617.2)
+    supuesto: false
+    fuente: {tipo: doi, clave: G05, doi: "10.1016/S1473-3099(22)00001-9", pagina: "p. 603 (Summary); p. 606 (Results)", cita: "Hart et al. 2022, Lancet Infect Dis 22(5):603-610"}
+    sensibilidad:
+      - {min: 4.1, max: 5.6, tipo: CrI95, clave: G05, pagina: "p. 603 (Summary); p. 606 (Results)", nota: "Delta, hogares Reino Unido may-ago 2021"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
   D_ola4:
-    valor: null
+    valor: 6.84
     unidad: dia
     definicion: intervalo_generacion
+    estimador: intrinseco
     ola: ola4
     variante: Omicron BA.1
-    supuesto: true
-    justificacion: "Intervalo de generación medio de Ómicron. Copiar valor y página de G06 (Manica et al. 2022) desde la hoja Parámetros."
-    sensibilidad: {min: 3.0, max: 7.0}
-    fuente_candidata: {clave: G06, doi: "10.1016/j.lanepe.2022.100446"}
+    supuesto: false
+    fuente: {tipo: doi, clave: G06, doi: "10.1016/j.lanepe.2022.100446", pagina: "p. 1 (Summary, Findings); Tabla 2", cita: "Manica et al. 2022, Lancet Reg Health Eur 19:100446 (hogares, Reggio Emilia, enero 2022: BA.1)"}
+    sensibilidad:
+      - {min: 5.72, max: 8.60, tipo: CrI95, clave: G06, pagina: "p. 1 (Summary, Findings); Tabla 2", nota: "Ómicron BA.1"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
   D_ola5:
-    valor: null
+    valor: 6.84
     unidad: dia
     definicion: intervalo_generacion
+    estimador: intrinseco
     ola: ola5
     variante: Omicron BA.2/BA.5
     supuesto: true
-    justificacion: "Sin estimación de Tg específica para BA.5 en la bibliografía fichada; regla prevista: D_ola5 = D_ola4."
-    sensibilidad: {min: 3.0, max: 7.0}
-    fuente_candidata: {clave: G06, doi: "10.1016/j.lanepe.2022.100446"}
+    justificacion: "Sin GI intrínseco de BA.2/BA.5 en la bibliografía. Regla: D_ola5 = D_ola4 (valor de BA.1, G06). Decisión de Omar 2026-11-04."
+    fuente_candidata: {clave: G06, doi: "10.1016/j.lanepe.2022.100446", pagina: "p. 1 (Summary, Findings); Tabla 2"}
+    sensibilidad:
+      - {min: 5.72, max: 8.60, tipo: CrI95, clave: G06, pagina: "p. 1 (Summary, Findings); Tabla 2", nota: "BA.1 aplicado a BA.2/BA.5"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
 
   # --- Incubación: SOLO para H5 (síntomas -> infección). NO es D. ----------
   incubacion_mediana:
