@@ -152,3 +152,55 @@ tablas, pero no forman parte del análisis primario de identificabilidad.
 - `resultados/olas/sensibilidad.csv` — tabla de sensibilidad.
 - `resultados/olas/olas.png` — figura de control.
 - `docs/olas_resultados.md` — resultados y discusión.
+
+---
+
+## 7. Enmienda A1 (posterior a la primera aplicación; declarada antes de ejecutarla)
+
+> Esta sección se añadió **después** de aplicar R1–R7 y **antes** de ejecutar
+> la enmienda (ver historial de git). No es confirmatoria: al redactarla ya se
+> conocía la tabla de sensibilidad de §4, que incluye $w = 21$.
+
+**Resultado de la regla declarada.** Con $\rho = 2$, $w = 7$ y la fuente JHU,
+la regla produce **15 episodios**, no 5 (`resultados/olas/declarada/`). Por R7
+se reporta tal cual. El diagnóstico muestra que el exceso se debe a dos
+artefactos de reporte, que se identifican con criterios que **no dependen del
+número de olas**:
+
+1. **Carga retroactiva del 2020-10-05:** +28 115 casos en un día (los días
+   vecinos registran ≈ 5 000). La media de 7 días convierte ese lote en un pico
+   espurio (2020-10-06) que pasa a ser el "pico" de la 1.ª ola.
+2. **Reporte por lotes desde 2022:** la fracción de días con cero casos
+   reportados pasa de < 5 % (2020–sep 2021) a 20–60 % (oct 2021–2023), con
+   rachas de hasta **$g = 8$ días** consecutivos sin reporte (oct–dic 2022).
+   Con $w = 7$, que un lote quede dentro o fuera de la ventana cambia
+   $\bar y_t$ en más de un factor 2, el umbral de R5.
+
+**A1.a — Lote retroactivo.** El valor del 2020-10-05 se sustituye por la
+mediana de los 7 días centrados en esa fecha. Es la única corrección puntual.
+
+**A1.b — Ventana de suavizado ligada al régimen de reporte.** Para que la
+entrada o salida de un solo lote no altere $\bar y_t$ en un factor comparable
+a $\rho$, la ventana debe contener al menos 3 ciclos de reporte completos:
+$w \ge 3\,(g + 1) = 27$. Redondeando a semanas completas, **$w = 28$ días**, que
+se aplica a toda la serie.
+
+**Sin cambios:** $\rho = 2$, R3–R7 y la ventana de estudio.
+
+**Sensibilidad de A1:** la misma de §4, con $w \in \{21, 28, 35\}$ en lugar de
+$\{7, 14, 21\}$. Además se calcula, como análisis **exploratorio**, la rejilla
+completa $\rho \times w$ con el número de olas.
+
+**Etiquetado (precisión de R7).** Cada ola detectada se etiqueta por el periodo
+de dominancia que contiene la fecha de su **pico** y se listan todos los
+periodos que su intervalo abarca. Periodos aproximados, *por verificar con
+CoViGen-Mex/InDRE*:
+
+| Periodo | Variante dominante | Ola convencional |
+|---|---|---|
+| 2020-02-27 – 2020-11-30 | Ancestrales (B.1, B.1.1, B.1.1.222) | 1.ª |
+| 2020-12-01 – 2021-05-31 | B.1.1.519 | 2.ª |
+| 2021-06-01 – 2021-12-14 | Delta (B.1.617.2, AY.*) | 3.ª |
+| 2021-12-15 – 2022-04-30 | Ómicron BA.1/BA.1.1 (BA.2 al final) | 4.ª |
+| 2022-05-01 – 2022-10-31 | Ómicron BA.4/BA.5 | 5.ª |
+| 2022-11-01 – 2023-02-28 | Ómicron BQ.1, XBB.1.5 | 5.ª (extensión a feb 2023) |
