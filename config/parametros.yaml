@@ -143,6 +143,11 @@ sintetico:
     unidad: "1 (escala log)"
     supuesto: false
     fuente: {tipo: regla, regla: "IC95 por perfil buscando los extremos (K02 p. 88): desde la MLE, pasos b = v*exp(+-0.002*2^j) hasta cruzar lmax - 1.92 o llegar al límite. Reemplaza la malla fija de 21 puntos, que no podía ubicar un IC más angosto que su paso (falló en la primera réplica, 2026-11-04). Límites: R0 en [0.8*Reff, 1.5*Reff/(rho*s0)], s0 en [0.7*rho*s0, 1], Reff en [0.5, 2]*Reff (src/recuperacion.py::limites_perfil)."}
+  perfil_pulir:
+    valor: false
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Los puntos del perfil se ajustan solo con L-BFGS-B (desde el arranque sobre la cresta), sin el pulido de Nelder-Mead; la MLE sí se pule. Medido el 2026-11-04 (R0 = 2, s0 = 1, D = 6.84, 20 semanas, ruido y verosimilitud NB): extremos del IC95 de R0, s0 y Reff idénticos a todos los dígitos impresos, con 3 a 5 veces menos evaluaciones."}
   perfil_biseccion:
     valor: 8
     unidad: pasos

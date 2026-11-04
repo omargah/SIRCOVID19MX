@@ -109,7 +109,7 @@ def main():
         "escenarios": escs, "replicas": n_rep, "semilla": P["semilla"],
         "verdad_fija": {k: P[k] for k in ("N", "i0", "rho", "k")},
         "sero": P["sero"] if con_sero else None, "perfil_paso_inicial": P["perfil_paso_inicial"],
-        "perfil_biseccion": P["perfil_biseccion"],
+        "perfil_biseccion": P["perfil_biseccion"], "perfil_pulir": P["perfil_pulir"],
         "fin_ola_fraccion_pico": P["fin_ola_fraccion_pico"],
     }), indent=1))
 

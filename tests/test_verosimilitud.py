@@ -60,3 +60,14 @@ def test_poisson_recupera_Reff_en_datos_poisson():
     inicio = {"R0": 4.0, "s0": 0.9, "i0": 3e-6, "rho": 0.3}
     mle = V.ajustar(d, P["gamma"], P["N"], inicio, modelo="poisson", rng=rng)
     assert V.reff(mle["theta"]) == pytest.approx(V.reff(VERDAD), rel=0.02)
+
+
+def test_k_tiene_tope_y_no_desborda():
+    """Con datos Poisson, la MLE de k de la BinNeg tiende a infinito: se topa en K_MAX."""
+    assert V.de_libre("k", 1e6) == V.K_MAX
+    assert V.de_libre("R0", 1e6) < float("inf")
+    rng = np.random.default_rng(8)
+    mu = V.media_casos(VERDAD, P["gamma"], P["N"], P["n_semanas"])
+    d = {"casos": sir.simular_casos_poisson(mu, rng)}
+    r = V.ajustar(d, P["gamma"], P["N"], VERDAD, n_arranques=0, modelo="nb")
+    assert np.isfinite(r["logvero"]) and r["theta"]["k"] <= V.K_MAX

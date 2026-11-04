@@ -91,7 +91,7 @@ def simular(theta, gamma, N, n_semanas, ruido, rng, sero_diseno=None):
 
 
 def ajustar_y_perfilar(d, gamma, N, modelo, inicio, rng, perfiles=("R0", "s0", "Reff"),
-                       max_rondas=3, paso_inicial=0.002, n_biseccion=8):
+                       max_rondas=3, paso_inicial=0.002, n_biseccion=8, pulir_perfil=False):
     """MLE + IC95 por perfil (ic_perfil_raiz) + criterios de comparación.
 
     Si algún perfil encuentra un punto con más verosimilitud que la MLE, la
@@ -104,7 +104,8 @@ def ajustar_y_perfilar(d, gamma, N, modelo, inicio, rng, perfiles=("R0", "s0", "
         th = mle["theta"]
         lim = limites_perfil(th)
         pfs = {nm: V.ic_perfil_raiz(nm, d, gamma, N, mle, lim[nm], modelo=modelo,
-                                    paso_inicial=paso_inicial, n_biseccion=n_biseccion)
+                                    paso_inicial=paso_inicial, n_biseccion=n_biseccion,
+                                    pulir=pulir_perfil)
                for nm in perfiles}
         lp_mejor, th_mejor = max((pf["mejor"] for pf in pfs.values()), key=lambda x: x[0])
         if lp_mejor <= mle["logvero"] + 1e-3 or ronda == max_rondas:
@@ -166,7 +167,8 @@ def replica(escenario, P, semilla, con_sero, combinaciones=None):
         try:
             res["ajustes"][clave] = ajustar_y_perfilar(
                 series[ruido], gamma, N, modelo, inicio, rng,
-                paso_inicial=P["perfil_paso_inicial"], n_biseccion=P["perfil_biseccion"])
+                paso_inicial=P["perfil_paso_inicial"], n_biseccion=P["perfil_biseccion"],
+                pulir_perfil=P["perfil_pulir"])
         except Exception as e:  # se registra por combinación; no se descarta la réplica
             res.setdefault("errores_ajuste", {})[clave] = f"{type(e).__name__}: {e}"
     return res

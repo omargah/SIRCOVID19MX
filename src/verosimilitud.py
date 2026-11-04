@@ -66,9 +66,21 @@ def a_libre(nombre, valor):
     return np.log(valor) if _TRANSFORMACION[nombre] == "log" else logit(valor)
 
 
+# Tope numérico de k. Con datos Poisson la MLE de k de la BinNeg se va a
+# infinito (Poisson es el límite k -> inf); sin tope aparecen inf/nan y el
+# ajuste truena (OverflowError en la primera corrida, 2026-11-04). Con
+# k = 1e8, Var = mu + mu^2/k difiere de Poisson en < 0.1 % para mu <= 1e5, y
+# tests/test_verosimilitud.py comprueba que con k = 1e9 la log-pmf coincide
+# con la de Poisson a 1e-5. Es un tope de cómputo, no un supuesto del modelo.
+K_MAX = 1e8
+
+
 def de_libre(nombre, z):
-    """Espacio libre -> valor natural (exp o logística)."""
-    return float(np.exp(z) if _TRANSFORMACION[nombre] == "log" else expit(z))
+    """Espacio libre -> valor natural (exp o logística); k se topa en K_MAX."""
+    if _TRANSFORMACION[nombre] == "log":
+        v = float(np.exp(min(z, 700.0)))  # exp(700) ~ 1e304: evita inf
+        return min(v, K_MAX) if nombre == "k" else v
+    return float(expit(z))
 
 
 # ---------------------------------------------------------------------------
@@ -161,7 +173,8 @@ def logvero_total(theta, datos, gamma, N, modelo="nb"):
 # Máxima verosimilitud
 # ---------------------------------------------------------------------------
 
-def ajustar(datos, gamma, N, inicio, fijos=None, n_arranques=3, rng=None, modelo="nb"):
+def ajustar(datos, gamma, N, inicio, fijos=None, n_arranques=3, rng=None, modelo="nb",
+            pulir=True):
     """Maximiza la log-verosimilitud sobre los parámetros no fijos.
 
     inicio : dict con un valor inicial para cada parámetro.
@@ -218,12 +231,13 @@ def ajustar(datos, gamma, N, inicio, fijos=None, n_arranques=3, rng=None, modelo
         r = minimize(objetivo, za, method="L-BFGS-B")
         if mejor is None or r.fun < mejor.fun:
             mejor = r
-    pulido = minimize(
-        objetivo, mejor.x, method="Nelder-Mead",
-        options={"xatol": 1e-6, "fatol": 1e-8, "maxiter": 4000, "maxfev": 8000},
-    )
-    if pulido.fun < mejor.fun:
-        mejor = pulido
+    if pulir:
+        pulido = minimize(
+            objetivo, mejor.x, method="Nelder-Mead",
+            options={"xatol": 1e-6, "fatol": 1e-8, "maxiter": 4000, "maxfev": 8000},
+        )
+        if pulido.fun < mejor.fun:
+            mejor = pulido
 
     return {
         "theta": a_theta(mejor.x), "logvero": -float(mejor.fun),
@@ -362,7 +376,7 @@ def _inicio_sobre_la_cresta(nombre, b, theta):
 
 
 def ic_perfil_raiz(nombre, datos, gamma, N, mle, limites, modelo="nb", lmax=None,
-                   paso_inicial=0.002, n_biseccion=8):
+                   paso_inicial=0.002, n_biseccion=8, pulir=True):
     """Extremos del IC95 por perfil como ceros de lp(b) - l*, l* = lmax - 1.92.
 
     Es el procedimiento "derivado directamente de la definición" que
@@ -389,18 +403,21 @@ def ic_perfil_raiz(nombre, datos, gamma, N, mle, limites, modelo="nb", lmax=None
     nivel = lmax - UMBRAL_95
     v0 = reff(mle["theta"]) if nombre == "Reff" else mle["theta"][nombre]
     lo, hi = limites
+    if not all(np.isfinite(x) and x > 0 for x in (v0, lo, hi)) or not lo < hi:
+        raise ValueError(f"Perfil de {nombre}: MLE o límites inválidos (v0={v0}, límites={limites})")
     evals, mejor = [], (mle["logvero"], mle["theta"])
 
     def lp_en(b, inicio):
         inicio = _inicio_sobre_la_cresta(nombre, b, inicio)
-        r = ajustar(datos, gamma, N, inicio, fijos={nombre: b}, n_arranques=0, modelo=modelo)
+        r = ajustar(datos, gamma, N, inicio, fijos={nombre: b}, n_arranques=0, modelo=modelo,
+                    pulir=pulir)
         evals.append((float(b), r["logvero"]))
         return r["logvero"], r["theta"]
 
     extremos = {}
     for signo, limite in ((-1, lo), (+1, hi)):
         b_in, th_in, j = v0, mle["theta"], 0
-        while True:
+        while j <= 60:  # 0.002*2^60 >> cualquier rango: siempre se llega al límite antes
             b = v0 * np.exp(signo * paso_inicial * 2.0**j)
             llego = (b <= limite) if signo < 0 else (b >= limite)
             if llego:

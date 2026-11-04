@@ -73,7 +73,8 @@ def resumir(datos):
             n = len(fc)
             if n == 0:
                 continue
-            celda = {"escenario_id": eid, **esc, "Reff_verdad": fc[0]["Reff_verdad"],
+            celda = {"escenario_id": eid, "esc_R0": esc["R0"], "esc_s0": esc["s0"], "esc_D": esc["D"],
+                     "Reff_verdad": fc[0]["Reff_verdad"],
                      "n_semanas": fc[0]["n_semanas"], "combo": combo, "n": n}
             for p in PARAMS:
                 v = np.array([_verdad(f, p) for f in fc])
@@ -133,7 +134,7 @@ def informe(r):
               "|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for c in r["celdas"]:
             q = c[p]
-            L.append(f"| {c['R0']:g} | {c['s0']:g} | {c['D']:g} | {c['n_semanas']} | {c['combo']} | {c['n']} | "
+            L.append(f"| {c['esc_R0']:g} | {c['esc_s0']:g} | {c['esc_D']:g} | {c['n_semanas']} | {c['combo']} | {c['n']} | "
                      f"{_f(q['sesgo_rel_mediana'])} | {_f(q['cobertura'], 2)} | {_f(q['cobertura_error_mc'], 2)} | "
                      f"{_f(q['frac_ic_abierto'], 2)} | {_f(q['frac_cresta_plana'], 2)} | "
                      f"{_f(q.get('frac_rango_analitico_cubierto_mediana'), 2)} |")
@@ -142,7 +143,7 @@ def informe(r):
           "| R0 | s0 | D | combo | n | cociente (mediana) | phi Pearson (mediana) | MLE no global |",
           "|---|---|---|---|---|---|---|---|"]
     for c in r["celdas"]:
-        L.append(f"| {c['R0']:g} | {c['s0']:g} | {c['D']:g} | {c['combo']} | {c['n']} | "
+        L.append(f"| {c['esc_R0']:g} | {c['esc_s0']:g} | {c['esc_D']:g} | {c['combo']} | {c['n']} | "
                  f"{_f(c['cociente_amplitud_R0_Reff_mediana'], 1)} | {_f(c['dispersion_pearson_mediana'], 2)} | "
                  f"{_f(c['frac_mle_no_global'], 2)} |")
     L += ["", "## NB contra Poisson: fracción de réplicas en que cada criterio elige NB", "",
