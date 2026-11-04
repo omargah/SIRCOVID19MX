@@ -139,3 +139,20 @@ def clasificar_perfil(valores, lp, lmax):
     clase = "cresta_plana" if (aa or ab) else "identificable"
     return {"clase": clase, "inf": inf, "sup": sup,
             "abierto_abajo": aa, "abierto_arriba": ab, "caida_max": caida}
+
+
+def fraccion_rango_cubierta(inf, sup, lo, hi):
+    """Fracción (en escala log) del rango analítico [lo, hi] cubierta por [inf, sup].
+
+    Sirve para leer un IC "cerrado" que en realidad está acotado solo por
+    las restricciones del espacio de parámetros (s0 <= 1, rho <= 1): con
+    casos solos el IC95 de R0 cubre ~todo [Reff, Reff/(rho*s0)] aunque sus
+    extremos queden dentro de la malla. 1 = cubre todo el rango analítico;
+    0 = no lo toca. No introduce umbral: se reporta el número.
+    """
+    if not (0 < lo < hi):
+        raise ValueError("Se requiere 0 < lo < hi")
+    a, b = max(inf, lo), min(sup, hi)
+    if b <= a:
+        return 0.0
+    return float((np.log(b) - np.log(a)) / (np.log(hi) - np.log(lo)))

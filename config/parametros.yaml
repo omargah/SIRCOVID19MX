@@ -112,6 +112,37 @@ sintetico:
     unidad: replicas
     supuesto: false
     fuente: {tipo: regla, regla: "200 réplicas: error Monte Carlo de un percentil 2.5% ~ sqrt(0.025*0.975/200) ~ 0.011 en probabilidad; suficiente para validar el método."}
+  # --- Recuperación sintética F4 (decisiones de Omar, 2026-11-04) ----------
+  malla_R0:
+    valor: [2.0, 3.0]
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Diseño: R0 en {2, 3}. Se corrigió {1.5, 3} porque R0 = 1.5 con s0 = 0.6 da R_eff(0) = 0.9 < 1 (sin ola). Decisión de Omar 2026-11-04."}
+  malla_s0:
+    valor: [0.6, 1.0]
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Diseño: s0 = 0.6 (ola posterior, simetría de H1 visible) y s0 = 1 (ola 1, nadie inmune). Decisión de Omar 2026-11-04."}
+  malla_D:
+    valor: [4.7, 6.84]
+    unidad: dia
+    supuesto: false
+    fuente: {tipo: regla, regla: "Diseño: los extremos de los D base con fuente (D_ola3 = 4.7, G05; D_ola4 = 6.84, G06). gamma = 1/D en cada escenario.", depende_de: []}
+  replicas:
+    valor: 50
+    unidad: replicas
+    supuesto: false
+    fuente: {tipo: regla, regla: "50 réplicas por escenario: error Monte Carlo de una cobertura de 0.95 ~ sqrt(0.95*0.05/50) ~ 0.03. Decisión de Omar 2026-11-04."}
+  fin_ola_fraccion_pico:
+    valor: 0.01
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Cada serie termina en la primera semana después del pico en que la incidencia ESPERADA (sin ruido) baja del 1 % del pico. Decisión de Omar 2026-11-04."}
+  puntos_perfil:
+    valor: 21
+    unidad: puntos
+    supuesto: false
+    fuente: {tipo: regla, regla: "21 puntos por perfil (medido: ~0.9 s por punto con LSODA). Mallas: R0 en [0.8*Reff, 1.5*Reff/(rho*s0)] y s0 en [0.7*rho*s0, 1] (rango no identificable analítico, src/identificabilidad.py, con holgura) y Reff en 0.8-1.2 veces su MLE; las cantidades rho*s0 y Reff se toman de la MLE."}
 
 real:
   # Olas (delimitación exacta: src/olas.py, se fija en F3 antes de ajustar):

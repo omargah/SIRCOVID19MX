@@ -88,3 +88,9 @@ def test_clasificar_perfil_abierto_de_un_lado():
     lp = -5.0 * np.exp(-x)  # sube y se aplana
     c = ident.clasificar_perfil(x, lp, 0.0)
     assert c["clase"] == "cresta_plana" and not c["abierto_abajo"] and c["abierto_arriba"]
+
+
+def test_fraccion_rango_cubierta():
+    assert ident.fraccion_rango_cubierta(1.0, 100.0, 1.0, 100.0) == pytest.approx(1.0)
+    assert ident.fraccion_rango_cubierta(1.0, 10.0, 1.0, 100.0) == pytest.approx(0.5)
+    assert ident.fraccion_rango_cubierta(200.0, 300.0, 1.0, 100.0) == 0.0
