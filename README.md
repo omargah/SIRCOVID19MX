@@ -71,24 +71,29 @@ v0-anterior/             archivo histórico; no se reutiliza
 
 ## Cómo reproducir
 
+Requisitos: `git`, `make` y Python ≥ 3.11 (o conda).
+
 ```bash
-conda env create -f environment.yml
+git clone https://github.com/omargah/SIRCOVID19MX.git
 ```
 
 ```bash
-conda activate sircovid
+cd SIRCOVID19MX
+```
+
+```bash
+make env
 ```
 
 ```bash
 make test
 ```
 
-```bash
-make
-```
-
-`make` corre el experimento sintético (unos minutos) y regenera números,
-figuras y tablas. `make escrito` además compila el PDF (requiere LaTeX).
+`make env` usa conda si está instalado (luego `conda activate sircovid`);
+si no, crea `.venv/` con pip usando los mismos paquetes de
+`environment.yml`. `make figuras` regenera las figuras (corre el
+experimento sintético, unos minutos, si algo cambió). `make` regenera
+números, figuras y tablas; `make escrito` además compila el PDF (requiere LaTeX).
 
 ## Fases
 
