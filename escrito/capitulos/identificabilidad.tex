@@ -1,0 +1,67 @@
+\section{Identificabilidad de $R_0$ y $s_0$ (H1)}
+% Borrador (F2/F4). Cifras: reports/numeros.tex. Figura: make_figuras.py.
+
+\paragraph{Simetría de escala.}
+Sea $(s,i)$ la solución con parámetros $(\beta, s_0, i_0)$ y sea $c>0$.
+Las funciones $s' = s/c$, $i' = i/c$ cumplen
+\begin{align*}
+  \dot s' &= -\tfrac{1}{c}\beta s i = -(c\beta)\, s' i', \\
+  \dot i' &= \tfrac{1}{c}(\beta s i - \gamma i) = (c\beta)\, s' i' - \gamma i',
+\end{align*}
+con $s'(0)=s_0/c$, $i'(0)=i_0/c$. Por unicidad, $(s',i')$ es la solución
+del SIR con $(c\beta, s_0/c, i_0/c)$. Con $\rho' = c\rho$, la media
+\eqref{eq:mu} no cambia:
+$\rho' N [s'(t_k)-s'(t_{k+1})] = \rho N [s(t_k)-s(t_{k+1})]$.
+Por lo tanto, con casos solos los parámetros
+$(R_0, s_0, i_0, \rho)$ y $(cR_0, s_0/c, i_0/c, c\rho)$ son
+indistinguibles para \emph{cualquier} tamaño de muestra: es una
+no identificabilidad estructural. Las combinaciones invariantes son
+$R_{\mathrm{eff}}(0)=R_0 s_0$, $\rho s_0$ e $i_0/s_0$. Las restricciones
+$s_0\le 1$ y $\rho\le 1$ dan $s_0 \le c \le 1/\rho$, así que $R_0$ solo
+queda acotado al intervalo $[R_0 s_0,\, R_0/\rho]$.
+
+La serología rompe la simetría porque el aumento de seroprevalencia
+$s(t_a)-s(t_b)$ se transforma en $[s(t_a)-s(t_b)]/c$.
+
+\paragraph{Verificación con datos sintéticos.}
+Simulamos una ola con $R_0=\SintVerdadRcero$, $s_0=\SintVerdadscero$,
+$\rho=\SintVerdadrho$, $1/\gamma=\SintGammaInv$ días y
+$N=\SintN$ (valores de diseño, \texttt{config/parametros.yaml}). El rango
+no identificable predicho es $R_0\in[\SintRangoRceroInf,\SintRangoRceroSup]$.
+Con casos solos, la MLE de $R_{\mathrm{eff}}(0)$ es $\SintCasosMLEReff$
+(verdad $\SintVerdadReff$; bootstrap paramétrico con $B=\SintB$:
+$[\SintCasosBootReffInf, \SintCasosBootReffSup]$). El perfil de $R_0$, en
+cambio, es plano en todo el rango predicho; el intervalo de perfil
+$[\SintCasosPerfilRceroInf, \SintCasosPerfilRceroSup]$ es finito, pero sus
+extremos los ponen las restricciones $s_0\le1$ y $\rho\le1$, no los datos.
+Por eso el criterio de no identificabilidad no puede ser ``intervalo
+abierto'': hay que comparar el intervalo con el rango admisible.
+
+Advertencia sobre el bootstrap: con casos solos, el intervalo bootstrap de
+$R_0$ sale $[\SintCasosBootRceroInf, \SintCasosBootRceroSup]$, angostísimo y
+sin contener la verdad. No es precisión: cada réplica se reajusta partiendo
+de la MLE y el optimizador se queda donde empieza porque la verosimilitud es
+plana en esa dirección. El bootstrap solo es informativo para
+combinaciones identificables (como $R_{\mathrm{eff}}(0)$); por eso el
+perfil va primero.
+
+Al agregar una encuesta serológica, el intervalo de perfil de $R_0$ se
+cierra en $[\SintSeroPerfilRceroInf, \SintSeroPerfilRceroSup]$ (bootstrap:
+$[\SintSeroBootRceroInf, \SintSeroBootRceroSup]$), ambos conteniendo el
+valor verdadero. Esto es una sola realización; la cobertura en muchas
+réplicas queda para F4.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\linewidth]{perfil_R0_sintetico.pdf}
+  \caption{Perfil de verosimilitud de $R_0$ en datos sintéticos. La banda
+  gris es el rango no identificable predicho por la simetría de escala.
+  El eje vertical se corta en $-20$; los puntos por debajo existen y están
+  en \texttt{reports/resultados/sintetico\_h1.json}.}
+\end{figure}
+
+\begin{table}[h]
+  \centering
+  \input{../reports/tablas/recuperacion_sintetica.tex}
+  \caption{Recuperación de parámetros en la ola sintética.}
+\end{table}

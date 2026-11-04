@@ -1,0 +1,16 @@
+# Entorno reproducible. Única lista de dependencias del proyecto:
+#   - con conda:  make env   (equivale a: conda env create -f environment.yml)
+#   - sin conda:  make env   crea .venv/ e instala estos mismos paquetes con pip
+#     (scripts/deps_pip.py lee ESTE archivo; no hay una segunda lista que mantener).
+name: sircovid
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.11
+  - numpy>=2.0
+  - scipy>=1.13
+  - pandas>=2.2
+  - matplotlib>=3.9
+  - sympy>=1.13
+  - pyyaml>=6.0
+  - pytest>=8.0
