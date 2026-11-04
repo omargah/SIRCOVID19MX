@@ -41,7 +41,7 @@ $$\frac{dR}{dt} = \gamma I$$
 | **F0** | Decisiones de alcance y metodología | ✅ Completada |
 | **F1** | Revisión sistemática de bibliografía | 🔄 En curso |
 | **F2** | Desarrollo de teoría (Cap. 2) | ⏳ Próxima |
-| **F3** | Análisis de datos y olas epidemiológicas | ⏳ Pendiente |
+| **F3** | Análisis de datos y olas epidemiológicas ([regla](docs/regla_olas.md), [resultados](docs/olas_resultados.md)) | 🔄 En curso |
 | **F4** | Validación con datos sintéticos | ⏳ Pendiente |
 | **F5** | Análisis cuantitativo (datos reales) | ⏳ Pendiente |
 | **F6** | Integración del manuscrito | ⏳ Pendiente |
@@ -60,6 +60,12 @@ SIRCOVID19MX/
 │   └── fuentes/          PDFs organizados por tema
 │
 ├── v0-anterior/          Desarrollo anterior (archivo histórico)
+│
+├── docs/                 Regla de olas declarada y resultados (F3)
+├── data/                 Series de casos (JHU CSSE; DGE vía mexicovid19)
+├── src/olas.py           Delimitación de olas + sensibilidad
+├── resultados/olas/      Tablas y figuras generadas
+├── tests/                Pruebas de la regla
 │
 └── scripts/              Utilidades
     └── generar_referencias.py

@@ -147,10 +147,11 @@ tablas, pero no forman parte del análisis primario de identificabilidad.
 
 ## 6. Productos
 
-- `src/olas.py` — implementación de R1–R7 y de la sensibilidad.
-- `resultados/olas/olas_base.csv` — fechas de cada ola (caso base).
-- `resultados/olas/sensibilidad.csv` — tabla de sensibilidad.
-- `resultados/olas/olas.png` — figura de control.
+- `src/olas.py` — implementación de R1–R7, de la enmienda A1 (§7) y de la sensibilidad.
+- `resultados/olas/{declarada,A1}/olas.csv` — fechas de cada ola.
+- `resultados/olas/{declarada,A1}/sensibilidad.csv`, `robustez_fronteras.csv`,
+  `rho_critico.csv`, `rejilla_rho_w.csv` — sensibilidad.
+- `resultados/olas/{declarada,A1}/olas.png` — figura de control.
 - `docs/olas_resultados.md` — resultados y discusión.
 
 ---
