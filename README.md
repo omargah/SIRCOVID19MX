@@ -42,7 +42,7 @@ $$\frac{dR}{dt} = \gamma I$$
 | **F1** | Revisión sistemática de bibliografía | 🔄 En curso |
 | **F2** | Desarrollo de teoría (Cap. 2) | ⏳ Próxima |
 | **F3** | Análisis de datos y olas epidemiológicas | ⏳ Pendiente |
-| **F4** | Validación con datos sintéticos | ⏳ Pendiente |
+| **F4** | Validación con datos sintéticos | ✅ Completada (plan congelado 2026-11-04) |
 | **F5** | Análisis cuantitativo (datos reales) | ⏳ Pendiente |
 | **F6** | Integración del manuscrito | ⏳ Pendiente |
 | **F7** | Presentación final | ⏳ Pendiente |
@@ -61,8 +61,24 @@ SIRCOVID19MX/
 │
 ├── v0-anterior/          Desarrollo anterior (archivo histórico)
 │
+├── sirmx/                Fase F4: modelo, verosimilitud, perfiles, r, cambios, pronóstico
+├── tests/                Pruebas de los pasos 1–8 (solo datos sintéticos)
+├── docs/
+│   ├── decisiones.md         Decisiones I2–I4 y correcciones
+│   ├── plan_analisis.md      Plan de análisis congelado
+│   └── validacion_sintetica.md  Tablas real vs estimado (generadas)
+│
 └── scripts/              Utilidades
-    └── generar_referencias.py
+    ├── generar_referencias.py
+    └── validacion_sintetica.py
+```
+
+### Validación sintética
+
+```bash
+pip install -r requirements.txt
+OPENBLAS_NUM_THREADS=1 python3 -m pytest -n 4          # ~4 min
+OPENBLAS_NUM_THREADS=1 python3 scripts/validacion_sintetica.py   # regenera docs/validacion_sintetica.md
 ```
 
 ---
