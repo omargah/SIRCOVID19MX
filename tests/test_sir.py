@@ -135,7 +135,8 @@ def test_tramos_con_un_tramo_igual_a_beta_constante(ola):
 def test_incidencia_suma_al_tamano_de_la_ola():
     """[E1] La suma de la incidencia semanal es rho * (S(0) - S(T))."""
     rho = 0.1
-    mu = sir.incidencia_semanal(R0, 1 / D, S0 / N, I0 / N, rho, N, 30)
+    # Convención 2026-11-04: s0 = (S0 + I0)/N (fracción no inmune).
+    mu = sir.incidencia_semanal(R0, 1 / D, (S0 + I0) / N, I0 / N, rho, N, 30)
     S, _, _ = sir.integrar_sir(R0, D, S0, I0, N, [0.0, 210.0])
     assert abs(mu.sum() - rho * (S0 - S[-1])) / (rho * S0) < 1e-10
 
@@ -147,3 +148,39 @@ def test_binomial_negativa_media_y_varianza():
     y = sir.simular_casos(np.full(200_000, mu), k, rng)
     assert abs(y.mean() - mu) / mu < 0.01
     assert abs(y.var() - (mu + mu**2 / k)) / (mu + mu**2 / k) < 0.03
+
+
+# --- Estado inicial con s0 = (S0 + I0)/N (decisión de Omar, 2026-11-04) ----
+
+def test_estado_inicial_convencion():
+    """S0 = N*s0 - I0, I0 = N*i0, R(0) = N*(1 - s0)."""
+    S0_, I0_ = sir.estado_inicial(0.6, 1e-5, N)
+    assert I0_ == pytest.approx(1e-5 * N)
+    assert S0_ == pytest.approx(0.6 * N - 1e-5 * N)
+    assert N - S0_ - I0_ == pytest.approx(0.4 * N)
+
+
+@pytest.mark.parametrize("N_", [1.0, 1e7, 126014024.0])
+@pytest.mark.parametrize("i0", [1e-9, 1e-5, 0.1 / 126014024.0, 3e-3])
+def test_s0_igual_a_uno_se_puede_simular(N_, i0):
+    """Ola 1 (nadie inmune): s0 = 1 ya no truena y R(0) = 0 hasta el redondeo."""
+    S0_, I0_ = sir.estado_inicial(1.0, i0, N_)
+    assert S0_ + I0_ <= N_
+    assert (N_ - S0_ - I0_) / N_ < 1e-15
+    mu = sir.incidencia_semanal(2.0, 1 / 5.2, 1.0, i0, 0.1, N_, 40)
+    assert np.all(mu >= 0) and np.isfinite(mu).all()
+
+
+def test_estado_inicial_invalido_se_rechaza():
+    for s0, i0 in [(0.5, 0.5), (0.5, 0.6), (1.1, 1e-5), (0.5, 0.0)]:
+        with pytest.raises(ValueError):
+            sir.estado_inicial(s0, i0, N)
+
+
+def test_poisson_media_y_varianza():
+    """Modelo de observación Poisson (K04, p. 23): media = varianza = mu."""
+    rng = np.random.default_rng(2)
+    mu = 300.0
+    y = sir.simular_casos_poisson(np.full(200_000, mu), rng)
+    assert abs(y.mean() - mu) / mu < 0.01
+    assert abs(y.var() - mu) / mu < 0.02

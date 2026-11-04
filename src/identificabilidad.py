@@ -56,8 +56,9 @@ def rango_c_admisible(theta):
     """Valores de c que mantienen s0' <= 1 y rho' <= 1: [s0, 1/rho].
 
     (s0/c <= 1  <=>  c >= s0;   rho*c <= 1  <=>  c <= 1/rho.)
-    También hay que pedir s0' + i0' <= 1, pero como i0 << s0 la cota
-    s0' <= 1 domina en la práctica.
+    Con la convención s0 = (S0 + I0)/N (src/sir.py::estado_inicial) la cota
+    s0' <= 1 es exactamente S0' + I0' <= N; i0' < s0' se conserva porque
+    ambos se dividen entre c.
     """
     return theta["s0"], 1.0 / theta["rho"]
 

@@ -5,6 +5,25 @@ Ecuaciones (Kermack y McKendrick 1927, bibliografía B01):
     dI/dt =  beta * S * I / N - gamma * I
     dR/dt =  gamma * I
 con gamma = 1/D (D = periodo infeccioso medio, días) y beta = R0 * gamma.
+Forma en personas: Hethcote 2000 (B02), p. 604, ec. (2.1); en fracciones,
+p. 605, ec. (2.2); sigma = beta/gamma = R0 en el SIR, p. 605.
+
+D ES UNA APROXIMACIÓN. Ningún estudio mide "1/gamma": en el SIR el tiempo
+en I es exponencial con media 1/gamma, y para esa distribución el
+intervalo de generación medio también es 1/gamma (Wallinga y Lipsitch 2007,
+F01, p. 601, ec. 3.1). Por eso D se toma del intervalo de generación
+INTRÍNSECO de cada variante (config/parametros.yaml, D_olaN). La
+aproximación ignora la latencia y la forma no exponencial del periodo
+infeccioso real; su efecto se barre con la sensibilidad de D.
+
+Fuentes con página de los resultados de abajo:
+  [E2] Hethcote 2000 (B02), p. 607: i + s - ln(s)/sigma es constante.
+  [E3] Hethcote 2000 (B02), p. 607, ec. (2.4): s_inf es la única raíz en
+       (0, 1/sigma) de i0 + s0 - s_inf + ln(s_inf/s0)/sigma = 0.
+  [E4] Wallinga y Lipsitch 2007 (F01), p. 601, ec. (3.1): R = 1 + r/b con
+       b = gamma; exp(r*Tc) (ec. 3.5, p. 602) es la del GI de duración fija.
+  R_eff(0) = sigma*s0: "replacement number" al tiempo cero, Hethcote 2000
+       (B02), p. 607 (Teorema 2.1: la ola crece si sigma*s0 > 1).
 
 Resultados exactos que usan las pruebas (tests/test_sir.py):
   [E1] S + I + R = N para todo t (sumar las tres ecuaciones da 0).
@@ -49,7 +68,15 @@ Decisiones numéricas (para poder defenderlas)
   t_{k+1} son S(t_k) - S(t_{k+1}); no hace falta integrar beta*S*I/N otra vez.
 * Semanas y no días: los casos diarios tienen ciclo semanal de registro que
   el SIR no modela; sumar por semana lo quita sin agregar parámetros.
-* Binomial negativa y no Poisson: Var = mu + mu^2/k, con k -> inf = Poisson.
+* Modelo de observación: casos de un intervalo ~ BinNeg(media rho*H,
+  tamaño k), Var = mu + mu^2/k (King et al. 2016, K04, p. 32, ec. 17), o
+  ~ Poisson(rho*H) (K04, p. 23, ec. 13). Se implementan las DOS y se
+  comparan (decisión I2 de Omar, 2026-11-03).
+* Estado inicial en fracciones (decisión de Omar, 2026-11-04): s0 es la
+  fracción NO inmune al inicio de la ola, (S + I)/N, e i0 = I/N. Entonces
+  S0 = N*s0 - I0, I0 = N*i0 y R(0) = N*(1 - s0) >= 0. Con esto s0 = 1 (ola 1:
+  nadie inmune) es válido; antes S0 = N*s0 hacía S0 + I0 > N y el
+  integrador lo rechazaba. Ver estado_inicial().
 """
 
 from __future__ import annotations
@@ -172,9 +199,32 @@ def integrar_sir(R0, D, S0, I0, N, t):
 
 # ---------------------------------------------------------------------------
 # Modelo de observación (lo usan verosimilitud.py e identificabilidad.py)
-# Trabajan en fracciones s0 = S0/N, i0 = I0/N y con gamma, porque así se
-# parametriza la estimación; aquí solo se traduce a personas y a D = 1/gamma.
+# Trabajan en fracciones (s0 = (S0 + I0)/N, i0 = I0/N) y con gamma, porque
+# así se parametriza la estimación; aquí solo se traduce a personas y a
+# D = 1/gamma con estado_inicial().
 # ---------------------------------------------------------------------------
+
+def estado_inicial(s0, i0, N):
+    """(S0, I0) en personas a partir de las fracciones (s0, i0).
+
+    Convención (decisión de Omar, 2026-11-04): s0 = (S0 + I0)/N es la
+    fracción NO inmune al inicio de la ola e i0 = I0/N. Entonces
+        I0 = N*i0,   S0 = N*s0 - I0,   R(0) = N*(1 - s0) >= 0.
+    Requiere 0 < i0 < s0 <= 1.
+
+    Guarda de redondeo: con s0 = 1, (N - I0) + I0 puede salir N + 1 ulp en
+    punto flotante y el integrador rechazaría S0 + I0 > N. Si pasa, S0 se
+    baja al flotante inmediato inferior (cambio de ~1e-9 personas con
+    N ~ 1e8, muy por debajo de rtol*N), hasta que S0 + I0 <= N.
+    """
+    if not (0.0 < i0 < s0 <= 1.0):
+        raise ValueError(f"Se requiere 0 < i0 < s0 <= 1 (s0={s0}, i0={i0})")
+    I0 = N * i0
+    S0 = N * s0 - I0
+    while S0 + I0 > N:
+        S0 = np.nextafter(S0, 0.0)
+    return S0, I0
+
 
 def incidencia_semanal(R0, gamma, s0, i0, rho, N, n_semanas):
     """Casos reportados esperados por semana: mu_k = rho * [S(t_k) - S(t_{k+1})].
@@ -183,7 +233,8 @@ def incidencia_semanal(R0, gamma, s0, i0, rho, N, n_semanas):
     supuesta constante durante la ola.
     """
     t = 7.0 * np.arange(n_semanas + 1)  # bordes de las semanas, en días
-    S, _, _ = integrar_sir(R0, 1.0 / gamma, s0 * N, i0 * N, N, t)
+    S0, I0 = estado_inicial(s0, i0, N)
+    S, _, _ = integrar_sir(R0, 1.0 / gamma, S0, I0, N, t)
     nuevas = -np.diff(S)
     # Cuando la ola ya terminó, -diff puede dar -1e-9 por redondeo; se
     # recorta a 0 para que la media de la binomial negativa sea válida.
@@ -198,11 +249,12 @@ def infectados_entre(R0, gamma, s0, i0, t_a, t_b, N=1.0):
     seroconversión despreciable. El resultado no depende de N (el SIR en
     fracciones no tiene N), por eso N tiene un valor por omisión.
     """
+    S0, I0 = estado_inicial(s0, i0, N)
     if t_a == 0:
         # Los tiempos deben ser crecientes; en t = 0 sabemos que S = S0.
-        S, _, _ = integrar_sir(R0, 1.0 / gamma, s0 * N, i0 * N, N, [0.0, t_b])
-        return (s0 * N - S[-1]) / N
-    S, _, _ = integrar_sir(R0, 1.0 / gamma, s0 * N, i0 * N, N, [0.0, t_a, t_b])
+        S, _, _ = integrar_sir(R0, 1.0 / gamma, S0, I0, N, [0.0, t_b])
+        return (S0 - S[-1]) / N
+    S, _, _ = integrar_sir(R0, 1.0 / gamma, S0, I0, N, [0.0, t_a, t_b])
     return (S[1] - S[2]) / N
 
 
@@ -214,3 +266,11 @@ def simular_casos(mu, k, rng):
     """
     mu = np.asarray(mu, dtype=float)
     return rng.negative_binomial(k, k / (k + mu))
+
+
+def simular_casos_poisson(mu, rng):
+    """Una realización de casos semanales ~ Poisson(mu) (K04, p. 23, ec. 13).
+
+    Es el límite k -> inf de la binomial negativa: Var = mu.
+    """
+    return rng.poisson(np.asarray(mu, dtype=float))
