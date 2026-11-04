@@ -113,3 +113,29 @@ def intervalo_perfil(valores, lp, lmax):
     inf = valores[0] if abierto_abajo else cruce(j0, j0 - 1)
     sup = valores[-1] if abierto_arriba else cruce(j1, j1 + 1)
     return float(inf), float(sup), bool(abierto_abajo), bool(abierto_arriba)
+
+
+def clasificar_perfil(valores, lp, lmax):
+    """Clasifica un perfil de verosimilitud según Raue et al. 2009 (J01).
+
+    Criterio (sin umbrales nuevos: solo el 1.92 de UMBRAL_95):
+      * "identificable": el perfil cruza lmax - 1.92 por ambos lados dentro
+        de la malla; el IC95 por perfil es finito (J01, p. 1924, sec. 2.3:
+        "identifiable, if the confidence interval ... is finite").
+      * "cresta_plana": el perfil NO cruza el umbral por al menos un lado de
+        la malla; el IC95 queda abierto (J01, p. 1925, Definición 1, y
+        p. 1926: un parámetro estructuralmente no identificable tiene
+        perfil plano). Es el resultado que H1 predice para R0 y s0 con
+        casos solos.
+    La malla debe cubrir el rango no identificable analítico
+    (rango_R0_no_identificable) con holgura; un IC "abierto" solo dice que
+    los datos no lo acotan DENTRO de la malla.
+
+    Devuelve dict con la clase, el intervalo (inf, sup, abierto_abajo,
+    abierto_arriba) y la caída máxima del perfil dentro de la malla.
+    """
+    inf, sup, aa, ab = intervalo_perfil(valores, lp, lmax)
+    caida = float(np.nanmax(lmax - np.asarray(lp, dtype=float)))
+    clase = "cresta_plana" if (aa or ab) else "identificable"
+    return {"clase": clase, "inf": inf, "sup": sup,
+            "abierto_abajo": aa, "abierto_arriba": ab, "caida_max": caida}

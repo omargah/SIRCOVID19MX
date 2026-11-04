@@ -68,3 +68,23 @@ def test_intervalo_perfil_interpolacion():
     inf, sup, aa, ab = ident.intervalo_perfil(x, lp, 0.0)
     assert abs(inf - (3 - 1.96)) < 1e-3 and abs(sup - (3 + 1.96)) < 1e-3
     assert not aa and not ab
+
+
+def test_clasificar_perfil_cuadratico_es_identificable():
+    x = np.linspace(0, 6, 61)
+    c = ident.clasificar_perfil(x, -0.5 * (x - 3) ** 2, 0.0)
+    assert c["clase"] == "identificable" and c["caida_max"] == pytest.approx(4.5)
+
+
+def test_clasificar_perfil_plano_es_cresta():
+    x = np.linspace(1, 25, 30)
+    c = ident.clasificar_perfil(x, np.full(x.size, -10.0) - 1e-3 * (x - 1), -10.0)
+    assert c["clase"] == "cresta_plana" and c["abierto_abajo"] and c["abierto_arriba"]
+
+
+def test_clasificar_perfil_abierto_de_un_lado():
+    """No identificabilidad práctica (Raue, Def. 1): acotado abajo, abierto arriba."""
+    x = np.linspace(0, 10, 101)
+    lp = -5.0 * np.exp(-x)  # sube y se aplana
+    c = ident.clasificar_perfil(x, lp, 0.0)
+    assert c["clase"] == "cresta_plana" and not c["abierto_abajo"] and c["abierto_arriba"]
