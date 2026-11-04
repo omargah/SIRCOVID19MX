@@ -1,0 +1,6 @@
+ola,origen,inicio,pico,fin,duracion_dias,incidencia_pico,casos_en_ola,ola_convencional,periodos_abarcados,variante_dominante_en_pico,fuente_variante,estatus,supuestos_violados,nota
+1,§8 (separación posterior),2020-02-27,2020-07-20,2020-09-30,217,6507,743216,1,1,"Ancestrales (B.1, B.1.1, B.1.1.222; D614G)",Taboada et al. 2021,primario,,"separada por criterio externo a la regla de la curva, tomado después de ver el resultado de la regla principal (§8)"
+2,§8 (separación posterior),2020-10-01,2021-01-18,2021-05-15,227,14839,1614187,2,"1,2",B.1.1.519 (Alpha y Gamma no dominaron),Zárate et al. 2022 (doi:10.1128/spectrum.02240-21); Taboada et al. 2021,primario,,"separada por criterio externo a la regla de la curva, tomado después de ver el resultado de la regla principal (§8)"
+3,A1,2021-05-16,2021-08-07,2021-12-09,208,17406,1531024,3,"2,3","Delta (B.1.617.2, AY.*)",Taboada et al. 2022 (por verificar); CoViGen-Mex,primario,,
+4,A1,2021-12-10,2022-01-25,2022-04-24,136,36978,1822071,4,"3,4",Ómicron BA.1/BA.1.1,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación; escape inmune; pruebas caseras,
+5,A1,2022-04-25,2022-07-14,2023-02-28,310,25001,1718792,5,"4,5",Ómicron BA.4/BA.5,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras,
