@@ -51,7 +51,7 @@ data/processed/          datos derivados, regenerables
 src/
   datos.py               carga y valida parámetros; (F3) datos SSA y ENSANUT
   olas.py                (F3) delimitación de olas
-  sir.py                 SIR, incidencia semanal, simulación BinNeg
+  sir.py                 SIR en personas (β constante y por tramos), relaciones exactas, modelo de observación
   verosimilitud.py       log-verosimilitud, MLE, perfiles, bootstrap
   identificabilidad.py   simetría de escala (H1), IC por perfil
 tests/                   pytest: contra soluciones exactas y datos sintéticos

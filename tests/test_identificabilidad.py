@@ -13,7 +13,9 @@ VERDAD = {n: P[n] for n in V.PARAMETROS}
 def test_simetria_de_escala_es_exacta(c):
     """Parámetros transformados dan la misma incidencia (hasta error numérico)."""
     d = ident.diferencia_maxima_simetria(VERDAD, c, P["gamma"], P["N"], P["n_semanas"])
-    assert d < 1e-6
+    # Medido: ~4e-9 del pico (error del integrador). Umbral 1e-7 deja margen
+    # entre plataformas; una simetría falsa daría diferencias O(1).
+    assert d < 1e-7
 
 
 def test_serologia_rompe_la_simetria():

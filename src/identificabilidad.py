@@ -69,12 +69,18 @@ def rango_R0_no_identificable(theta):
 
 
 def diferencia_maxima_simetria(theta, c, gamma, N, n_semanas):
-    """Máxima diferencia relativa en la incidencia esperada entre theta y
-    su transformado. Debe ser del orden del error del integrador (~1e-8)."""
+    """Máxima diferencia en la incidencia esperada entre theta y su
+    transformado, relativa al PICO de la incidencia.
+
+    Por qué relativa al pico y no semana por semana: la incidencia es una
+    resta S(t_k) - S(t_{k+1}) de dos números ~N. En la cola de la ola esa
+    resta es chica y hereda el error absoluto de S (~rtol * N), así que su
+    error relativo semana a semana crece sin que el modelo esté mal. Respecto
+    al pico, el error debe ser del orden de la tolerancia del integrador."""
     a = sir.incidencia_semanal(theta["R0"], gamma, theta["s0"], theta["i0"], theta["rho"], N, n_semanas)
     t2 = transformar(theta, c)
     b = sir.incidencia_semanal(t2["R0"], gamma, t2["s0"], t2["i0"], t2["rho"], N, n_semanas)
-    return float(np.max(np.abs(a - b) / np.maximum(a, 1e-300)))
+    return float(np.max(np.abs(a - b)) / np.max(a))
 
 
 def intervalo_perfil(valores, lp, lmax):
