@@ -1,0 +1,16 @@
+ola,inicio,pico,fin,duracion_dias,incidencia_pico,casos_en_ola,ola_convencional,periodos_abarcados,variante_dominante_en_pico,fuente_variante,estatus,supuestos_violados
+1,2020-02-27,2020-10-06,2020-11-15,263,8133,1006522,1,1,"Ancestrales (B.1, B.1.1, B.1.1.222; D614G)",Taboada et al. 2021,primario,
+2,2020-11-16,2021-01-18,2021-05-21,187,17559,1386222,2,"1,2",B.1.1.519 (Alpha y Gamma no dominaron),Zárate et al. 2022 (doi:10.1128/spectrum.02240-21); Taboada et al. 2021,primario,
+3,2021-05-22,2021-08-19,2021-12-18,211,19015,1537271,3,"2,3,4","Delta (B.1.617.2, AY.*)",Taboada et al. 2022 (por verificar); CoViGen-Mex,primario,
+4,2021-12-19,2022-01-22,2022-03-28,100,49322,1721538,4,4,Ómicron BA.1/BA.1.1,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación; escape inmune; pruebas caseras
+5,2022-03-29,2022-04-05,2022-05-03,36,8251,88527,4,"4,5",Ómicron BA.1/BA.1.1,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación; escape inmune; pruebas caseras
+6,2022-05-04,2022-07-12,2022-08-18,107,31889,1209973,5,5,Ómicron BA.4/BA.5,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+7,2022-08-19,2022-08-25,2022-09-05,18,9265,91528,5,5,Ómicron BA.4/BA.5,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+8,2022-09-06,2022-09-20,2022-10-02,27,2888,49290,5,5,Ómicron BA.4/BA.5,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+9,2022-10-03,2022-10-10,2022-11-02,31,1417,22285,5,5,Ómicron BA.4/BA.5,CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+10,2022-11-03,2022-11-11,2022-11-17,15,786,6658,5,5,"Ómicron BQ.1, XBB.1.5",CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+11,2022-11-18,2022-11-22,2022-11-25,8,930,6510,5,5,"Ómicron BQ.1, XBB.1.5",CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+12,2022-11-26,2022-12-26,2022-12-29,34,5426,109291,5,5,"Ómicron BQ.1, XBB.1.5",CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+13,2022-12-30,2023-01-05,2023-01-15,17,7055,80424,5,5,"Ómicron BQ.1, XBB.1.5",CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+14,2023-01-16,2023-01-23,2023-02-09,25,5454,85957,5,5,"Ómicron BQ.1, XBB.1.5",CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras
+15,2023-02-10,2023-02-16,2023-02-28,19,4133,50581,5,5,"Ómicron BQ.1, XBB.1.5",CoViGen-Mex / InDRE (por verificar),secundario (supuestos violados),vacunación (con refuerzos); escape inmune; pruebas caseras

@@ -54,22 +54,26 @@ data/raw/                datos descargados, sin tocar (no van a git; registro en
 data/processed/          datos derivados, regenerables
 src/
   datos.py               carga y valida parámetros; (F3) datos SSA y ENSANUT
-  olas.py                (F3) delimitación de olas
+  olas.py                (F3) regla de olas declarada + A1 + frontera 1.ª/2.ª (docs/regla_olas.md)
+  olas_provisional.py    (F3) otra regla de olas, "provisional"; ver docs/pendientes_integracion.md
   sir.py                 SIR en personas (β constante y por tramos), relaciones exactas, modelo de observación
   verosimilitud.py       log-verosimilitud, MLE, perfiles, bootstrap
   identificabilidad.py   simetría de escala (H1), IC por perfil
-tests/                   pytest: contra soluciones exactas y datos sintéticos
+tests/                   pytest: contra soluciones exactas y datos sintéticos (incl. test_olas*.py)
 tests/teoria/            derivaciones a–k del Cap. 2: SymPy + sir.py (make teoria)
 scripts/
   correr_sintetico.py    experimento sintético (lento) -> reports/resultados/
   make_numeros.py        -> reports/numeros.tex
   make_figuras.py        -> reports/figuras/
   make_tablas.py         -> reports/tablas/
+data/*.csv               series de casos de las olas (JHU CSSE; DGE vía mexicovid19), versionadas
+resultados/olas/         tablas y figuras de la regla de olas (declarada/, A1/, A1_frontera/)
 reports/                 todo lo generado que cita el escrito
 escrito/                 LaTeX
 docs/actas/              acta de cierre de cada fase
 docs/plan_analisis.md    plan (borrador hasta cerrar F4)
 docs/desviaciones.md     registro de desviaciones
+docs/regla_olas.md       regla de olas declarada antes de aplicarse; docs/olas_resultados.md: resultados
 docs/teoria_verificacion.md  tabla derivación → test y discrepancias halladas
 bibliografia/            índice, BibTeX y fichas de lectura (F1)
 v0-anterior/             archivo histórico; no se reutiliza
@@ -111,7 +115,7 @@ Cada fase cierra con acta (`docs/actas/Fx-nombre.md`), commit etiquetado
 | F0 | Alcance, hipótesis, reglas, estructura | Cerrada (`v0.0`, [acta](docs/actas/F0-alcance.md)) |
 | F1 | Bibliografía: fichas con cifra y página | En curso |
 | F2 | Teoría: SIR, identificabilidad, verosimilitud | En curso (derivación de H1 en borrador) |
-| F3 | Datos SSA y ENSANUT; regla de olas | Pendiente |
+| F3 | Datos SSA y ENSANUT; regla de olas ([regla](docs/regla_olas.md), [resultados](docs/olas_resultados.md)) | En curso (olas calculadas con JHU; datos DGE pendientes) |
 | F4 | Validación sintética de todos los métodos; **congela el plan** | En curso (H1 hecho; H2–H5 pendientes) |
 | F5 | Análisis con datos reales | Bloqueada hasta cerrar F4 |
 | F6 | Escrito | Pendiente |
