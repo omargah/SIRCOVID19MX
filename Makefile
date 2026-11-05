@@ -1,6 +1,7 @@
 # Uso:
 #   make env      crea el entorno (conda si existe; si no, .venv con pip)
 #   make test     corre las pruebas
+#   make teoria   solo la verificación simbólica+numérica del Cap. 2 (tests/teoria/)
 #   make figuras  regenera figuras (y el experimento sintético si cambió algo)
 #   make          números + figuras + tablas para el escrito
 #
@@ -26,6 +27,9 @@ env:
 test:
 	$(PY) -m pytest -q
 
+teoria:
+	$(PY) -m pytest -m teoria -q -rx
+
 $(RES): scripts/correr_sintetico.py src/*.py config/parametros.yaml
 	$(PY) scripts/correr_sintetico.py
 
@@ -50,4 +54,4 @@ resumen:
 	$(PY) scripts/resumen_recuperacion.py
 	$(PY) scripts/listar_supuestos.py
 
-.PHONY: all env test figuras tablas escrito recuperacion resumen
+.PHONY: all env test teoria figuras tablas escrito recuperacion resumen

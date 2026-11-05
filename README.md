@@ -59,6 +59,7 @@ src/
   verosimilitud.py       log-verosimilitud, MLE, perfiles, bootstrap
   identificabilidad.py   simetría de escala (H1), IC por perfil
 tests/                   pytest: contra soluciones exactas y datos sintéticos
+tests/teoria/            derivaciones a–k del Cap. 2: SymPy + sir.py (make teoria)
 scripts/
   correr_sintetico.py    experimento sintético (lento) -> reports/resultados/
   make_numeros.py        -> reports/numeros.tex
@@ -69,6 +70,7 @@ escrito/                 LaTeX
 docs/actas/              acta de cierre de cada fase
 docs/plan_analisis.md    plan (borrador hasta cerrar F4)
 docs/desviaciones.md     registro de desviaciones
+docs/teoria_verificacion.md  tabla derivación → test y discrepancias halladas
 bibliografia/            índice, BibTeX y fichas de lectura (F1)
 v0-anterior/             archivo histórico; no se reutiliza
 ```
