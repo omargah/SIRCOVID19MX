@@ -1,10 +1,9 @@
-"""Lectura de configuración y (a partir de F3) de los datos de la SSA y ENSANUT.
+"""Cargador de config/parametros.yaml con validación de fuentes.
 
-Por ahora contiene el cargador de config/parametros.yaml, que hace cumplir
-la regla (2): ningún parámetro sin fuente. El esquema está documentado en la
-cabecera de ese archivo. La carga y limpieza de datos reales se escribe en
-F3; por la regla (3), ningún método de estimación se aplica a datos reales
-antes de cerrar F4.
+Hace cumplir la regla (2): ningún parámetro sin fuente. El esquema está
+documentado en la cabecera de ese archivo. (Antes se llamaba src/datos.py;
+ese nombre ahora es del pipeline de microdatos DGE. Por la regla (3), ningún
+método de estimación se aplica a datos reales antes de cerrar F4.)
 
 Qué rechaza el cargador (lanza ParametroSinFuente)
 --------------------------------------------------

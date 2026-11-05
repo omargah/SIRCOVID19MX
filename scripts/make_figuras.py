@@ -15,10 +15,10 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src import datos, identificabilidad as ident  # noqa: E402
+from src import parametros, identificabilidad as ident  # noqa: E402
 
-ENTRADA = datos.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
-CARPETA = datos.RAIZ / "reports" / "figuras"
+ENTRADA = parametros.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
+CARPETA = parametros.RAIZ / "reports" / "figuras"
 
 
 def figura_perfil_R0(r):

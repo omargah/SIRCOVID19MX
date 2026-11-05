@@ -3,9 +3,9 @@
 import numpy as np
 import pytest
 
-from src import datos, identificabilidad as ident, sir, verosimilitud as V
+from src import parametros, identificabilidad as ident, sir, verosimilitud as V
 
-P = datos.cargar_parametros("sintetico")
+P = parametros.cargar_parametros("sintetico")
 VERDAD = {n: P[n] for n in V.PARAMETROS}
 
 

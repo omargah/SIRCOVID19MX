@@ -4,9 +4,9 @@ scripts/recuperacion_sintetica.py; aquí solo una combinación y malla chica).""
 import numpy as np
 import pytest
 
-from src import datos, recuperacion as R, verosimilitud as V
+from src import parametros, recuperacion as R, verosimilitud as V
 
-P = datos.cargar_parametros("sintetico")
+P = parametros.cargar_parametros("sintetico")
 
 
 def test_semanas_hasta_fin_termina_despues_del_pico():

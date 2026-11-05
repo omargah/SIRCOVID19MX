@@ -14,10 +14,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src import datos  # noqa: E402
+from src import parametros  # noqa: E402
 
-ENTRADA = datos.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
-SALIDA = datos.RAIZ / "reports" / "numeros.tex"
+ENTRADA = parametros.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
+SALIDA = parametros.RAIZ / "reports" / "numeros.tex"
 
 NOMBRE_LATEX = {"R0": "Rcero", "s0": "scero", "i0": "icero", "rho": "rho", "k": "k"}
 
@@ -58,7 +58,7 @@ def main():
         macros[f"Sint{pref}PerfilRceroSup"] = r"\text{abierto}" if ab else fmt(sup)
 
     lineas = ["% ARCHIVO GENERADO por scripts/make_numeros.py. NO EDITAR A MANO.",
-              f"% Fuente: {ENTRADA.relative_to(datos.RAIZ)}"]
+              f"% Fuente: {ENTRADA.relative_to(parametros.RAIZ)}"]
     lineas += [rf"\newcommand{{\{k}}}{{{v}}}" for k, v in sorted(macros.items())]
     SALIDA.write_text("\n".join(lineas) + "\n")
     print(f"Escrito {SALIDA} ({len(macros)} macros)")

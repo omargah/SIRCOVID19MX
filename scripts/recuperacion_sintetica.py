@@ -41,7 +41,7 @@ import numpy as np
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from src import datos, recuperacion as R  # noqa: E402
+from src import parametros, recuperacion as R  # noqa: E402
 
 SALIDA = RAIZ / "reports" / "resultados" / "recuperacion"
 
@@ -112,7 +112,7 @@ def main():
     ap.add_argument("--replicas", type=int, default=None, help="por omisión, la del YAML")
     a = ap.parse_args()
 
-    P = datos.cargar_parametros("sintetico")
+    P = parametros.cargar_parametros("sintetico")
     con_sero = a.datos == "casos_sero"
     n_rep = a.replicas or P["replicas"]
     SALIDA.mkdir(parents=True, exist_ok=True)

@@ -19,7 +19,7 @@ Se descartan explícitamente de `zealous` los datos JHU y la frontera 2020-10-01
 |---|---|
 | `config/parametros.yaml` | Parámetros con fuente obligatoria o `supuesto: true` + sensibilidad. D por ola con CrI95 y rango de Byrne. Diseño de la recuperación sintética. |
 | `config/medidas.yaml` | Fechas candidatas de la medida para H5 (sin citar hasta ver el DOF). |
-| `src/datos.py` | Cargador que hace cumplir la regla de fuentes. Sensibilidad en lista con fuente; `estimador` de D obligatorio. |
+| `src/parametros.py` | Cargador que hace cumplir la regla de fuentes. Sensibilidad en lista con fuente; `estimador` de D obligatorio. |
 | `src/sir.py` | SIR en personas (LSODA en S, ln I, R). Convención s0 = (S0+I0)/N. BinNeg y Poisson. |
 | `src/semanas.py` | Semana epidemiológica domingo-sábado (una sola definición). |
 | `src/truncar.py` | `truncar_corte(serie, N)` en semanas completas; `semanas_desde_dias`. |
@@ -73,7 +73,7 @@ supera a la MLE.
    - Dispersión de Pearson y AIC: Pawitan 2001 (LIB03) según su índice (§4.5
      p. 84, §13.5 p. 375), pero la copia en Drive solo trae ~55 páginas.
 3. **INDICE.csv del repo** no tiene M07, J06, M23, M24 ni N08 (Gostic, Roda,
-   Bastos, McGough, Goolsbee). El validador de `src/datos.py` rechaza claves que no
+   Bastos, McGough, Goolsbee). El validador de `src/parametros.py` rechaza claves que no
    estén ahí: mientras el chat 01 no actualice el índice, esas fuentes solo se
    citan en comentarios, no en `parametros.yaml`.
 4. `incubacion_mediana` sigue apuntando a G01 (Lauer). Omar corrigió que 6.4 d es

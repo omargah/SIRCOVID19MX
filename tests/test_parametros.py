@@ -5,7 +5,7 @@ import copy
 import pytest
 import yaml
 
-from src import datos
+from src import parametros
 
 REGLA = {"tipo": "regla", "regla": "valor de diseño"}
 
@@ -24,29 +24,29 @@ def _entrada(**cambios):
 
 def _rechaza(tmp_path, entradas, mensaje=None):
     archivo = _escribir(tmp_path, {"s": entradas})
-    with pytest.raises(datos.ParametroSinFuente, match=mensaje):
-        datos.cargar_parametros("s", archivo, permitir_pendientes=True)
+    with pytest.raises(parametros.ParametroSinFuente, match=mensaje):
+        parametros.cargar_parametros("s", archivo, permitir_pendientes=True)
 
 
 # --- El archivo real del repositorio --------------------------------------
 
 def test_archivo_del_repo_es_valido():
-    datos.cargar_entradas()
+    parametros.cargar_entradas()
 
 
 def test_sintetico_carga():
-    p = datos.cargar_parametros("sintetico")
+    p = parametros.cargar_parametros("sintetico")
     assert p["gamma"] == pytest.approx(1 / 7)
 
 
 def test_real_pendiente_se_rechaza():
-    with pytest.raises(datos.ParametroSinFuente, match="pendientes"):
-        datos.cargar_parametros("real")
+    with pytest.raises(parametros.ParametroSinFuente, match="pendientes"):
+        parametros.cargar_parametros("real")
 
 
 def test_real_supuestos_entran_a_sensibilidad():
-    entradas = datos.cargar_entradas()["real"]
-    rangos = datos.rangos_sensibilidad("real")
+    entradas = parametros.cargar_entradas()["real"]
+    rangos = parametros.rangos_sensibilidad("real")
     supuestos = {n for n, e in entradas.items() if e["supuesto"]}
     assert set(rangos) == supuestos
     # Desde 2026-11-04 D_ola3 y D_ola4 tienen fuente (G05, G06); D_ola1,
@@ -56,7 +56,7 @@ def test_real_supuestos_entran_a_sensibilidad():
 
 
 def test_real_D_un_solo_tipo_y_no_incubacion():
-    entradas = datos.cargar_entradas()["real"]
+    entradas = parametros.cargar_entradas()["real"]
     ds = {n: e for n, e in entradas.items() if n.startswith("D_")}
     assert set(ds) == {f"D_ola{i}" for i in range(1, 6)}
     assert {e["definicion"] for e in ds.values()} == {"intervalo_generacion"}
@@ -64,7 +64,7 @@ def test_real_D_un_solo_tipo_y_no_incubacion():
 
 
 def test_real_N_tiene_anio():
-    fuente = datos.cargar_entradas()["real"]["N"]["fuente"]
+    fuente = parametros.cargar_entradas()["real"]["N"]["fuente"]
     assert fuente["tipo"] == "institucional" and isinstance(fuente["anio"], int)
 
 
@@ -113,7 +113,7 @@ def test_doi_distinto_al_indice_se_rechaza(tmp_path):
 def test_doi_completo_se_acepta(tmp_path):
     f = {"tipo": "doi", "clave": "G01", "doi": "10.7326/M20-0504", "pagina": "p. 3"}
     archivo = _escribir(tmp_path, {"s": {"x": _entrada(fuente=f)}})
-    assert datos.cargar_parametros("s", archivo) == {"x": 1.0}
+    assert parametros.cargar_parametros("s", archivo) == {"x": 1.0}
 
 
 def test_institucional_sin_anio_se_rechaza(tmp_path):
@@ -137,8 +137,8 @@ def _supuesto(**cambios):
 
 def test_supuesto_completo_se_acepta_y_va_a_sensibilidad(tmp_path):
     archivo = _escribir(tmp_path, {"s": {"rho": _supuesto(), "N": _entrada()}})
-    assert datos.cargar_parametros("s", archivo)["rho"] == 0.3
-    assert datos.rangos_sensibilidad("s", archivo) == {"rho": (0.1, 0.5)}
+    assert parametros.cargar_parametros("s", archivo)["rho"] == 0.3
+    assert parametros.rangos_sensibilidad("s", archivo) == {"rho": (0.1, 0.5)}
 
 
 def test_supuesto_sin_justificacion_se_rechaza(tmp_path):
@@ -177,22 +177,22 @@ def test_D_con_gamma_aparte_se_rechaza(tmp_path):
 
 def test_gamma_se_deriva_de_D(tmp_path):
     archivo = _escribir(tmp_path, {"s": {"D_ola1": _D(valor=5.0)}})
-    p = datos.cargar_parametros("s", archivo)
-    assert datos.gamma_ola(p, "ola1") == pytest.approx(0.2)
+    p = parametros.cargar_parametros("s", archivo)
+    assert parametros.gamma_ola(p, "ola1") == pytest.approx(0.2)
 
 
 def test_rechaza_tambien_errores_en_otra_seccion(tmp_path):
     malo = copy.deepcopy({"a": {"x": _entrada()}, "b": {"y": _entrada(fuente=None)}})
     archivo = _escribir(tmp_path, malo)
-    with pytest.raises(datos.ParametroSinFuente, match="b.y"):
-        datos.cargar_parametros("a", archivo)
+    with pytest.raises(parametros.ParametroSinFuente, match="b.y"):
+        parametros.cargar_parametros("a", archivo)
 
 
 # --- D por variante y sensibilidad con fuente (2026-11-04) ---------------
 
 def test_real_D_valores_y_fuentes():
     """Valores verificados contra los PDF: G02 p. 1, G05 p. 603, G06 p. 1."""
-    e = datos.cargar_entradas()["real"]
+    e = parametros.cargar_entradas()["real"]
     assert [e[f"D_ola{i}"]["valor"] for i in range(1, 6)] == [5.20, 5.20, 4.7, 6.84, 6.84]
     assert e["D_ola3"]["fuente"]["clave"] == "G05" and e["D_ola4"]["fuente"]["clave"] == "G06"
     # Ganyani (G02) no es intrínseco: solo puede ser supuesto.
@@ -201,14 +201,14 @@ def test_real_D_valores_y_fuentes():
 
 def test_real_D_nunca_valores_prohibidos():
     """Ningún D base es la incubación (6.4), dos PCR negativas (13.4) ni el GI realizado (3.59)."""
-    e = datos.cargar_entradas()["real"]
+    e = parametros.cargar_entradas()["real"]
     for i in range(1, 6):
         assert e[f"D_ola{i}"]["valor"] not in (6.4, 13.4, 3.59)
 
 
 def test_real_D_sensibilidad_CrI_mas_Byrne():
     """Cada D trae su CrI95 y el rango de Byrne (G04, 6.5-9.5), rotulados con fuente."""
-    det = datos.rangos_sensibilidad_detalle("real")
+    det = parametros.rangos_sensibilidad_detalle("real")
     for i in range(1, 6):
         rangos = det[f"D_ola{i}"]
         assert any(r["tipo"] == "CrI95" for r in rangos)
@@ -246,5 +246,5 @@ def test_sensibilidad_lista_envolvente_y_detalle(tmp_path):
         {"min": 0.35, "max": 0.9, "tipo": "rango", "clave": "G04", "pagina": "p. 1"}])
     del e["fuente"]
     archivo = _escribir(tmp_path, {"s": {"x": e}})
-    assert datos.rangos_sensibilidad("s", archivo) == {"x": (0.1, 0.9)}
-    assert [r["clave"] for r in datos.rangos_sensibilidad_detalle("s", archivo)["x"]] == ["G02", "G04"]
+    assert parametros.rangos_sensibilidad("s", archivo) == {"x": (0.1, 0.9)}
+    assert [r["clave"] for r in parametros.rangos_sensibilidad_detalle("s", archivo)["x"]] == ["G02", "G04"]

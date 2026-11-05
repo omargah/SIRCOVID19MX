@@ -36,7 +36,7 @@ Máxima verosimilitud con perfiles (nada bayesiano). β constante por ola
 2. **Ningún parámetro sin fuente** en `config/parametros.yaml` (DOI + página,
    cifra oficial con año, o regla de cálculo). Lo que no tiene fuente se marca
    `supuesto: true` con un rango y entra al análisis de sensibilidad.
-   `src/datos.py` lo hace cumplir: truena si falta. El tiempo característico
+   `src/parametros.py` lo hace cumplir: truena si falta. El tiempo característico
    D (γ = 1/D) es uno solo por ola, el mismo para estimar y simular, y es
    intervalo de generación o periodo infeccioso, nunca incubación.
 3. **Primero datos sintéticos.** Ningún método toca datos reales hasta
@@ -53,7 +53,7 @@ config/parametros.yaml   parámetros con fuente (regla 2)
 data/raw/                datos descargados, sin tocar (no van a git; registro en README)
 data/processed/          datos derivados, regenerables
 src/
-  datos.py               carga y valida parámetros; (F3) datos SSA y ENSANUT
+  parametros.py          carga y valida config/parametros.yaml (regla 2)
   olas.py                (F3) regla de olas declarada + A1 + frontera 1.ª/2.ª (docs/regla_olas.md)
   olas_provisional.py    (F3) otra regla de olas, "provisional"; ver docs/pendientes_integracion.md
   sir.py                 SIR en personas (β constante y por tramos), relaciones exactas, modelo de observación

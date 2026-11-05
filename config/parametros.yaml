@@ -1,7 +1,7 @@
 # Parámetros del proyecto. Regla (2): ningún parámetro sin fuente.
 #
 # Origen: hoja "Parámetros" del libro PT1_bibliografia_v2.xlsx. Cada fila de
-# esa hoja es una entrada aquí. src/datos.py valida el archivo completo al
+# esa hoja es una entrada aquí. src/parametros.py valida el archivo completo al
 # cargarlo y TRUENA (ParametroSinFuente) si alguna entrada viola el esquema.
 #
 # ---------------------------------------------------------------------------
@@ -24,7 +24,7 @@
 #   Si supuesto: true   -> no hay fuente que respalde la cifra. Obligatorio:
 #     justificacion: por qué se usa ese valor / qué falta para tener fuente
 #     sensibilidad:  {min: a, max: b}   rango que barre el análisis de
-#                    sensibilidad (src/datos.py::rangos_sensibilidad).
+#                    sensibilidad (src/parametros.py::rangos_sensibilidad).
 #     fuente_candidata (opcional): {clave, doi} donde se espera encontrarla.
 #   Al llenar la página de la fuente candidata, se cambia a supuesto: false
 #   y se mueve a `fuente`.
@@ -38,13 +38,13 @@
 #   1. el modelo que genera los datos no es el que los ajusta, y
 #   2. la incubación (infección -> síntomas) no es el tiempo que una persona
 #      pasa en el compartimento I del SIR.
-# Regla nueva, verificada por src/datos.py:
+# Regla nueva, verificada por src/parametros.py:
 #   * Cada ola tiene una entrada D_olaN con `definicion` igual a
 #     "intervalo_generacion" o "periodo_infeccioso" (nunca "incubacion",
 #     "latencia" ni "intervalo_serial").
 #   * Todas las D_olaN de una sección usan LA MISMA definición.
 #   * gamma no se declara aparte en esa sección: se deriva, gamma = 1/D
-#     (src/datos.py::gamma_ola). Así no puede haber un gamma para estimar y
+#     (src/parametros.py::gamma_ola). Así no puede haber un gamma para estimar y
 #     otro para simular.
 #   * Se elige el intervalo de generación medio Tg: en el SIR (periodo
 #     infeccioso exponencial) el intervalo de generación medio es 1/gamma,
@@ -202,7 +202,7 @@ real:
   #       los de G02, G05 y G06 lo son; NO son IC de confianza).
   #   El rango de Byrne 2020 (G04) solo cubre D MÁS LARGOS que los D base
   #   (6.5-9.5 d frente a 4.7-6.84 d): la sensibilidad es asimétrica.
-  # NO son D (y src/datos.py no los acepta como definicion): incubación
+  # NO son D (y src/parametros.py no los acepta como definicion): incubación
   # (6.4 d, G03), tiempo a dos PCR negativas (13.4 d, G04), intervalo de
   # generación realizado en hogares de Ómicron (3.59 d, G06).
   D_ola1:

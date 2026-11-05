@@ -18,9 +18,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src import datos, identificabilidad as ident, sir, verosimilitud as V  # noqa: E402
+from src import parametros, identificabilidad as ident, sir, verosimilitud as V  # noqa: E402
 
-SALIDA = datos.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
+SALIDA = parametros.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
 
 
 def intervalo_percentil(x):
@@ -28,7 +28,7 @@ def intervalo_percentil(x):
 
 
 def main():
-    P = datos.cargar_parametros("sintetico")
+    P = parametros.cargar_parametros("sintetico")
     rng = np.random.default_rng(P["semilla"])
     verdad = {n: P[n] for n in V.PARAMETROS}
     gamma, N = P["gamma"], P["N"]

@@ -5,11 +5,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src import datos  # noqa: E402
+from src import parametros  # noqa: E402
 from make_numeros import fmt  # noqa: E402  (mismo formato que numeros.tex)
 
-ENTRADA = datos.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
-CARPETA = datos.RAIZ / "reports" / "tablas"
+ENTRADA = parametros.RAIZ / "reports" / "resultados" / "sintetico_h1.json"
+CARPETA = parametros.RAIZ / "reports" / "tablas"
 
 SIMBOLO = {"R0": r"$R_0$", "s0": r"$s_0$", "i0": r"$i_0$", "rho": r"$\rho$", "k": r"$k$"}
 

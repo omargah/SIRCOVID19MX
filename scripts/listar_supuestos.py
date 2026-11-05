@@ -2,7 +2,7 @@
 
 Uso: python scripts/listar_supuestos.py
 Escribe reports/parametros_fuentes.md (generado; no editar a mano).
-Valida el archivo con src/datos.py (truena si algo viola la regla 2).
+Valida el archivo con src/parametros.py (truena si algo viola la regla 2).
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from src import datos  # noqa: E402
+from src import parametros  # noqa: E402
 
 
 def _fuente(e):
@@ -29,10 +29,10 @@ def _fuente(e):
 
 
 def main():
-    todo = datos.cargar_entradas()
+    todo = parametros.cargar_entradas()
     L = ["# Parámetros y su fuente", "",
          "Generado por `scripts/listar_supuestos.py` desde `config/parametros.yaml` "
-         "(validado por `src/datos.py`). No editar a mano.", ""]
+         "(validado por `src/parametros.py`). No editar a mano.", ""]
     for sec, entradas in todo.items():
         sin = {n: e for n, e in entradas.items() if e["supuesto"]}
         pend = [n for n, e in entradas.items() if e["valor"] is None]

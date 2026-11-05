@@ -60,7 +60,7 @@ SIR determinista por ola, en fracciones de población (`src/sir.py`):
    incubación, que fue el error del PT1 viejo: 10/11/9/7/6 d para estimar y
    5.1/3.0 d de incubación para simular). Plan: análisis de sensibilidad
    barriendo cada parámetro con `supuesto: true` en su rango
-   (`src/datos.py::rangos_sensibilidad`).
+   (`src/parametros.py::rangos_sensibilidad`).
 5. **Fecha de síntomas vs fecha de infección (H5).** τ se estima en tiempo
    de síntomas; para compararlo con la JNSD hay que restar el periodo de
    incubación (parámetro con fuente, pendiente: G01 Lauer et al. 2020).
