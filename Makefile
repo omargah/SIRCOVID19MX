@@ -41,4 +41,13 @@ tablas: $(RES) scripts/make_tablas.py
 escrito: all
 	cd escrito && latexmk -pdf main.tex
 
-.PHONY: all env test figuras tablas escrito
+# Recuperación sintética (F4). Reanudable: si se corta, volver a correr.
+recuperacion:
+	$(PY) scripts/recuperacion_sintetica.py --datos casos
+	$(PY) scripts/recuperacion_sintetica.py --datos casos_sero
+
+resumen:
+	$(PY) scripts/resumen_recuperacion.py
+	$(PY) scripts/listar_supuestos.py
+
+.PHONY: all env test figuras tablas escrito recuperacion resumen

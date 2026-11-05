@@ -65,6 +65,32 @@ def _a_json(x):
     return x
 
 
+def leer_hechas(archivo):
+    """{(escenario_id, réplica)} ya guardadas en el .jsonl.
+
+    Si la corrida se cortó a media escritura (p. ej. la computadora se
+    suspendió), la última línea puede quedar incompleta: se descarta (esa
+    réplica se vuelve a calcular, con la misma semilla), se reescribe el
+    archivo sin ella y se avisa.
+    """
+    hechas = set()
+    if not archivo.exists():
+        return hechas
+    buenas, malas = [], 0
+    for linea in archivo.read_text().splitlines():
+        try:
+            d = json.loads(linea)
+        except json.JSONDecodeError:
+            malas += 1
+            continue
+        buenas.append(linea)
+        hechas.add((d["escenario_id"], d["replica"]))
+    if malas:
+        archivo.write_text("".join(l + "\n" for l in buenas))
+        print(f"Aviso: se descartaron {malas} línea(s) incompletas de {archivo.name}", flush=True)
+    return hechas
+
+
 def _tarea(args):
     esc, rep, con_sero, P = args
     semilla = np.random.SeedSequence([P["semilla"], esc["id"], rep, int(con_sero)])
@@ -92,11 +118,7 @@ def main():
     SALIDA.mkdir(parents=True, exist_ok=True)
     archivo = SALIDA / f"{a.datos}.jsonl"
 
-    hechas = set()
-    if archivo.exists():
-        for linea in archivo.read_text().splitlines():
-            d = json.loads(linea)
-            hechas.add((d["escenario_id"], d["replica"]))
+    hechas = leer_hechas(archivo)
     escs = escenarios(P)
     # Orden réplica-mayor: si se corta, todos los escenarios tienen réplicas.
     tareas = [(e, r, con_sero, P) for r in range(n_rep) for e in escs if (e["id"], r) not in hechas]

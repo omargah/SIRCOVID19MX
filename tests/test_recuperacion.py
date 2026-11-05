@@ -45,3 +45,18 @@ def test_ic_perfil_raiz_extremos_en_el_umbral():
     for b in (ic["inf"], ic["sup"]):
         r = V.ajustar(d, g, P["N"], mle["theta"], fijos={"Reff": b}, n_arranques=0, modelo="poisson")
         assert abs(r["logvero"] - (mle["logvero"] - V.UMBRAL_95)) < 0.1
+
+
+def test_reanudar_descarta_linea_incompleta(tmp_path):
+    """Una corrida cortada a media escritura deja una línea rota: se descarta y se repite esa réplica."""
+    import json
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+    import recuperacion_sintetica as RS
+    f = tmp_path / "casos.jsonl"
+    f.write_text(json.dumps({"escenario_id": 0, "replica": 0}) + "\n"
+                 + json.dumps({"escenario_id": 1, "replica": 0}) + "\n"
+                 + '{"escenario_id": 2, "repl')
+    assert RS.leer_hechas(f) == {(0, 0), (1, 0)}
+    assert len(f.read_text().splitlines()) == 2

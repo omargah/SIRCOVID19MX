@@ -124,7 +124,7 @@ def informe(r):
          f"Réplicas leídas: {r['n_lineas']}; con error: {r['n_errores']}.", ""]
     if r["errores"]:
         L += ["Errores (primeros):", *[f"- `{e}`" for e in r["errores"]], ""]
-    L += ["Combo = `ruido|verosimilitud`. Sesgo = mediana de (MLE − verdad)/verdad. "
+    L += ["Combo = `ruido → verosimilitud`. Sesgo = mediana de (MLE − verdad)/verdad. "
           "Cob = cobertura del IC95 por perfil (± error Monte Carlo). "
           "Abierto = fracción de IC95 abiertos en la malla. "
           "Rango = mediana de la fracción del rango no identificable analítico cubierta por el IC.", ""]
@@ -134,7 +134,7 @@ def informe(r):
               "|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for c in r["celdas"]:
             q = c[p]
-            L.append(f"| {c['esc_R0']:g} | {c['esc_s0']:g} | {c['esc_D']:g} | {c['n_semanas']} | {c['combo']} | {c['n']} | "
+            L.append(f"| {c['esc_R0']:g} | {c['esc_s0']:g} | {c['esc_D']:g} | {c['n_semanas']} | {c['combo'].replace('|', ' → ')} | {c['n']} | "
                      f"{_f(q['sesgo_rel_mediana'])} | {_f(q['cobertura'], 2)} | {_f(q['cobertura_error_mc'], 2)} | "
                      f"{_f(q['frac_ic_abierto'], 2)} | {_f(q['frac_cresta_plana'], 2)} | "
                      f"{_f(q.get('frac_rango_analitico_cubierto_mediana'), 2)} |")
@@ -143,7 +143,7 @@ def informe(r):
           "| R0 | s0 | D | combo | n | cociente (mediana) | phi Pearson (mediana) | MLE no global |",
           "|---|---|---|---|---|---|---|---|"]
     for c in r["celdas"]:
-        L.append(f"| {c['esc_R0']:g} | {c['esc_s0']:g} | {c['esc_D']:g} | {c['combo']} | {c['n']} | "
+        L.append(f"| {c['esc_R0']:g} | {c['esc_s0']:g} | {c['esc_D']:g} | {c['combo'].replace('|', ' → ')} | {c['n']} | "
                  f"{_f(c['cociente_amplitud_R0_Reff_mediana'], 1)} | {_f(c['dispersion_pearson_mediana'], 2)} | "
                  f"{_f(c['frac_mle_no_global'], 2)} |")
     L += ["", "## NB contra Poisson: fracción de réplicas en que cada criterio elige NB", "",

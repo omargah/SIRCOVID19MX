@@ -4,7 +4,7 @@ Rama: `claude/adoring-goodall-jf3lyb` (repo `omargah/SIRCOVID19MX`). Chat de
 código (chat 02). Lo de bibliografía y teoría va en el chat 01; bitácora y
 tablero, en el chat 00.
 
-Última actualización: 2026-11-04.
+Última actualización: 2026-11-05. Acta: `docs/actas/F4-sintetico.md`.
 
 ## 1. Qué hay
 
@@ -47,15 +47,23 @@ que pasan está en el acta (`docs/actas/F4-sintetico.md`), sacado de pytest.
   "Pico del periodo" = máximo global. Sensibilidad de D en lista con fuente.
 - 2026-11-04 · Hart 2022 se cita como Lancet Infect Dis 22(5):603–610. Todos los
   intervalos de G02, G05, G06 son CrI95.
+- 2026-11-05 · La recuperación sintética completa se corre en la computadora de
+  Omar (`docs/correr_recuperacion.md`): la sesión en la nube no sostiene
+  cálculos largos sin vigilancia.
 
 Decisiones numéricas mías (no de diseño del análisis; registradas en el YAML o
 el docstring): IC por perfil buscando los extremos (K02 p. 88) en vez de malla
 fija, porque la malla no ubicaba IC más angostos que su paso; arranque de cada
-punto del perfil sobre la cresta de H1 (medido: de 27 s a 0.6 s por punto);
-reajuste si un perfil supera a la MLE.
+punto del perfil sobre la cresta de H1; puntos del perfil sin pulido
+Nelder-Mead (extremos idénticos, medido); tope K_MAX de k; reajuste si un perfil
+supera a la MLE.
 
 ## 3. Bloqueos
 
+0. **Cómputo.** El contenedor de la sesión se recicla minutos después de quedar
+   inactivo y mata los procesos en segundo plano. La recuperación completa se
+   corre fuera (`docs/correr_recuperacion.md`); van las réplicas que tenga
+   `reports/resultados/recuperacion/casos.jsonl`.
 1. **Red.** La sesión no alcanza `www.dof.gob.mx`, `www.gob.mx` ni
    `datosabiertos.salud.gob.mx` (403 / no resuelve). Sin eso: no hay texto del
    acuerdo del DOF (fecha de la medida), no hay bases históricas de la DGE
@@ -75,7 +83,8 @@ reajuste si un perfil supera a la MLE.
 
 ## 4. Qué sigue
 
-1. Terminar la recuperación sintética y correr `scripts/resumen_recuperacion.py`.
+1. Omar corre `make recuperacion` y `make resumen` en su computadora y hace push;
+   luego se llenan las cifras del acta F4 con las tablas generadas.
 2. Fijar, ANTES de datos reales, el umbral de "comparable" del criterio de
    rechazo de H1 (amplitud relativa de IC(R0) contra IC(R_eff(0))): hoy se reporta
    el cociente sin umbral.
