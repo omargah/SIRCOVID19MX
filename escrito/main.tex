@@ -1,0 +1,26 @@
+% Escrito del Proyecto Terminal 1 (rehecho). Compilar con:  make escrito
+% Regla (1): ninguna cifra a mano. Todos los números vienen de
+% ../reports/numeros.tex (generado por scripts/make_numeros.py).
+\documentclass[11pt]{article}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,graphicx,booktabs,hyperref}
+\graphicspath{{../reports/figuras/}}
+
+\input{../reports/numeros.tex}
+
+\title{¿Qué tanto de la COVID-19 en México cabe en un SIR?\\
+\large Identificabilidad, pronóstico y cambios de transmisión, 2020--2023}
+\author{Ángel Omar García Hernández\\Licenciatura en Física, UAM-Iztapalapa}
+\date{}
+
+\begin{document}
+\maketitle
+
+\input{capitulos/introduccion}
+\input{capitulos/modelo}
+\input{capitulos/identificabilidad}
+
+\bibliographystyle{apalike}
+\bibliography{../bibliografia/referencias}
+\end{document}

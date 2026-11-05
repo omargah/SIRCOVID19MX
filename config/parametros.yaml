@@ -1,0 +1,354 @@
+# Parámetros del proyecto. Regla (2): ningún parámetro sin fuente.
+#
+# Origen: hoja "Parámetros" del libro PT1_bibliografia_v2.xlsx. Cada fila de
+# esa hoja es una entrada aquí. src/datos.py valida el archivo completo al
+# cargarlo y TRUENA (ParametroSinFuente) si alguna entrada viola el esquema.
+#
+# ---------------------------------------------------------------------------
+# Esquema de una entrada
+# ---------------------------------------------------------------------------
+#   valor:     número, lista, o null (= pendiente; el análisis no corre con él)
+#   unidad:    unidades físicas ("1" = adimensional)
+#   supuesto:  true | false            (obligatorio, sin valor por omisión)
+#
+#   Si supuesto: false  -> `fuente` obligatoria, de uno de estos tipos:
+#     {tipo: doi, clave: G02, doi: "10....", pagina: "p. 4, Tabla 2"}
+#         cifra tomada de un artículo. `clave` debe existir en
+#         bibliografia/INDICE.csv y, si ahí hay DOI, debe coincidir.
+#     {tipo: institucional, institucion: INEGI, documento: "...",
+#      anio: 2020, ubicacion: "tabulado / página"}
+#         cifra oficial sin DOI (INEGI, CONAPO, SSA).
+#     {tipo: regla, regla: "...", depende_de: [otros parámetros]}
+#         valor de diseño o calculado a partir de otras entradas.
+#
+#   Si supuesto: true   -> no hay fuente que respalde la cifra. Obligatorio:
+#     justificacion: por qué se usa ese valor / qué falta para tener fuente
+#     sensibilidad:  {min: a, max: b}   rango que barre el análisis de
+#                    sensibilidad (src/datos.py::rangos_sensibilidad).
+#     fuente_candidata (opcional): {clave, doi} donde se espera encontrarla.
+#   Al llenar la página de la fuente candidata, se cambia a supuesto: false
+#   y se mueve a `fuente`.
+#
+# ---------------------------------------------------------------------------
+# D: UN SOLO tiempo característico, el mismo para estimar y para simular
+# ---------------------------------------------------------------------------
+# El PT1 viejo (v0-anterior/) usaba 10, 11, 9, 7 y 6 días para estimar
+# gamma = 1/D por ola, y 5.1 / 3.0 días (periodos de INCUBACIÓN, Lauer et al.
+# 2020 y similares) para simular. Eso es inconsistente dos veces:
+#   1. el modelo que genera los datos no es el que los ajusta, y
+#   2. la incubación (infección -> síntomas) no es el tiempo que una persona
+#      pasa en el compartimento I del SIR.
+# Regla nueva, verificada por src/datos.py:
+#   * Cada ola tiene una entrada D_olaN con `definicion` igual a
+#     "intervalo_generacion" o "periodo_infeccioso" (nunca "incubacion",
+#     "latencia" ni "intervalo_serial").
+#   * Todas las D_olaN de una sección usan LA MISMA definición.
+#   * gamma no se declara aparte en esa sección: se deriva, gamma = 1/D
+#     (src/datos.py::gamma_ola). Así no puede haber un gamma para estimar y
+#     otro para simular.
+#   * Se elige el intervalo de generación medio Tg: en el SIR (periodo
+#     infeccioso exponencial) el intervalo de generación medio es 1/gamma,
+#     y r -> R0 vía R0 = 1 + r*Tg (Wallinga & Lipsitch 2007, F01).
+# La incubación se conserva aparte (incubacion_mediana) SOLO para recorrer
+# fechas de síntomas a fechas de infección en H5; nunca entra al SIR.
+
+sintetico:
+  # Valores de diseño para F4 (validación con datos sintéticos). No describen
+  # a México; se eligen para parecerse en orden de magnitud a una ola real y
+  # para que la simetría de escala de H1 tenga un rango amplio (s0<1, rho<<1).
+  semilla:
+    valor: 20200228
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Semilla fija para reproducibilidad; cualquier entero sirve."}
+  N:
+    valor: 1.0e+7
+    unidad: personas
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño: población del orden de una zona metropolitana grande."}
+  gamma:
+    valor: 0.14285714285714285   # = 1/7
+    unidad: 1/dia
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño: periodo infeccioso medio de 7 días, gamma = 1/7. Es la verdad conocida del experimento; se usa igual para simular y para ajustar."}
+  R0:
+    valor: 2.5
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño (verdad conocida para F4)."}
+  s0:
+    valor: 0.6
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño (verdad conocida para F4). s0 < 1 para que la simetría de H1 sea visible."}
+  i0:
+    valor: 1.0e-5
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño: 100 infecciosos en N = 1e7."}
+  rho:
+    valor: 0.1
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño: se reporta 1 de cada 10 infecciones."}
+  k:
+    valor: 20.0
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño: sobredispersión moderada (Var = mu + mu^2/20)."}
+  n_semanas:
+    valor: 30
+    unidad: semanas
+    supuesto: false
+    fuente: {tipo: regla, regla: "Valor de diseño: cubre crecimiento, pico y descenso con los valores de arriba."}
+  sero:
+    # Una encuesta antes de la ola (t=0) y otra a la semana 26.
+    valor: [[0.0, 182.0, null, 0.007]]
+    unidad: "[dia, dia, fraccion, fraccion]"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Diseño: ee = sqrt(p(1-p)/n), p = 0.3, n = 5000 -> 0.0065, redondeado a 0.007. delta_obs (null) se simula."}
+  B_bootstrap:
+    valor: 200
+    unidad: replicas
+    supuesto: false
+    fuente: {tipo: regla, regla: "200 réplicas: error Monte Carlo de un percentil 2.5% ~ sqrt(0.025*0.975/200) ~ 0.011 en probabilidad; suficiente para validar el método."}
+  # --- Recuperación sintética F4 (decisiones de Omar, 2026-11-04) ----------
+  malla_R0:
+    valor: [2.0, 3.0]
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Diseño: R0 en {2, 3}. Se corrigió {1.5, 3} porque R0 = 1.5 con s0 = 0.6 da R_eff(0) = 0.9 < 1 (sin ola). Decisión de Omar 2026-11-04."}
+  malla_s0:
+    valor: [0.6, 1.0]
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Diseño: s0 = 0.6 (ola posterior, simetría de H1 visible) y s0 = 1 (ola 1, nadie inmune). Decisión de Omar 2026-11-04."}
+  malla_D:
+    valor: [4.7, 6.84]
+    unidad: dia
+    supuesto: false
+    fuente: {tipo: regla, regla: "Diseño: los extremos de los D base con fuente (D_ola3 = 4.7, G05; D_ola4 = 6.84, G06). gamma = 1/D en cada escenario.", depende_de: []}
+  replicas:
+    valor: 50
+    unidad: replicas
+    supuesto: false
+    fuente: {tipo: regla, regla: "50 réplicas por escenario: error Monte Carlo de una cobertura de 0.95 ~ sqrt(0.95*0.05/50) ~ 0.03. Decisión de Omar 2026-11-04."}
+  fin_ola_fraccion_pico:
+    valor: 0.01
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Cada serie termina en la primera semana después del pico en que la incidencia ESPERADA (sin ruido) baja del 1 % del pico. Decisión de Omar 2026-11-04."}
+  perfil_paso_inicial:
+    valor: 0.002
+    unidad: "1 (escala log)"
+    supuesto: false
+    fuente: {tipo: regla, regla: "IC95 por perfil buscando los extremos (K02 p. 88): desde la MLE, pasos b = v*exp(+-0.002*2^j) hasta cruzar lmax - 1.92 o llegar al límite. Reemplaza la malla fija de 21 puntos, que no podía ubicar un IC más angosto que su paso (falló en la primera réplica, 2026-11-04). Límites: R0 en [0.8*Reff, 1.5*Reff/(rho*s0)], s0 en [0.7*rho*s0, 1], Reff en [0.5, 2]*Reff (src/recuperacion.py::limites_perfil)."}
+  perfil_pulir:
+    valor: false
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Los puntos del perfil se ajustan solo con L-BFGS-B (desde el arranque sobre la cresta), sin el pulido de Nelder-Mead; la MLE sí se pule. Medido el 2026-11-04 (R0 = 2, s0 = 1, D = 6.84, 20 semanas, ruido y verosimilitud NB): extremos del IC95 de R0, s0 y Reff idénticos a todos los dígitos impresos, con 3 a 5 veces menos evaluaciones."}
+  perfil_biseccion:
+    valor: 8
+    unidad: pasos
+    supuesto: false
+    fuente: {tipo: regla, regla: "8 bisecciones (en escala log) entre el último punto dentro y el primero fuera del umbral: el extremo queda dentro de 2^-8 del intervalo de cruce."}
+
+real:
+  # Olas (delimitación exacta: src/olas.py, se fija en F3 antes de ajustar):
+  #   ola1 2020 (linaje ancestral)        ola2 invierno 2020-21 (ancestral, B.1.1.519)
+  #   ola3 verano 2021 (Delta)            ola4 invierno 2021-22 (Ómicron BA.1)
+  #   ola5 verano 2022 (Ómicron BA.2/BA.5)
+  #
+  # PENDIENTE: este bloque se transcribe de la hoja "Parámetros" de
+  # PT1_bibliografia_v2.xlsx. Las cifras de artículos quedan en null hasta
+  # copiar valor + página de la hoja/ficha; no se escriben de memoria.
+
+  # --- Población -----------------------------------------------------------
+  N:
+    valor: 126014024
+    unidad: personas
+    supuesto: false
+    fuente:
+      tipo: institucional
+      institucion: INEGI
+      documento: "Censo de Población y Vivienda 2020"
+      anio: 2020
+      ubicacion: "Población total, fecha de referencia 15 de marzo de 2020 (tabulados del cuestionario básico)"
+    nota: "Se usa el mismo N en todas las olas (la población cambia <3% en 2020-2022, efecto menor que la incertidumbre de rho). La alternativa por año es N_conapo_*."
+  N_conapo_2021:
+    valor: null
+    unidad: personas
+    supuesto: true
+    justificacion: "Alternativa a N para olas 2021-2022: proyección de población a mitad de año de CONAPO. Copiar cifra y cuadro de la hoja Parámetros."
+    sensibilidad: {min: 1.26e+8, max: 1.30e+8}
+    fuente_candidata: {institucion: CONAPO, documento: "Proyecciones de la Población de México y de las Entidades Federativas 2016-2050"}
+
+  # --- D: intervalo de generación medio por ola/variante (gamma = 1/D) ------
+  # D es una APROXIMACIÓN de 1/gamma. En el SIR el tiempo en I es
+  # exponencial con media 1/gamma y el intervalo de generación medio es
+  # también 1/gamma (Wallinga y Lipsitch 2007, F01, p. 601, ec. 3.1). En la
+  # realidad hay latencia y el periodo infeccioso no es exponencial, así que
+  # NINGÚN dato mide "1/gamma"; se toma el intervalo de generación INTRÍNSECO
+  # (población totalmente susceptible) porque es lo que liga r con R
+  # (Hart 2022, G05, p. 605; Manica 2022, G06, p. 1).
+  #
+  # Campos nuevos (decisión de Omar, 2026-11-04):
+  #   estimador: intrinseco | realizado_bajo_contencion
+  #       Si no es intrínseco, la entrada DEBE ser supuesto: true.
+  #   sensibilidad: LISTA de rangos, cada uno con su fuente:
+  #       {min, max, tipo, clave, pagina, nota}
+  #       tipo CrI95 = intervalo de credibilidad bayesiano del 95 % (todos
+  #       los de G02, G05 y G06 lo son; NO son IC de confianza).
+  #   El rango de Byrne 2020 (G04) solo cubre D MÁS LARGOS que los D base
+  #   (6.5-9.5 d frente a 4.7-6.84 d): la sensibilidad es asimétrica.
+  # NO son D (y src/datos.py no los acepta como definicion): incubación
+  # (6.4 d, G03), tiempo a dos PCR negativas (13.4 d, G04), intervalo de
+  # generación realizado en hogares de Ómicron (3.59 d, G06).
+  D_ola1:
+    valor: 5.20
+    unidad: dia
+    definicion: intervalo_generacion
+    estimador: realizado_bajo_contencion
+    ola: ola1
+    variante: ancestral
+    supuesto: true
+    justificacion: "No hay GI intrínseco del linaje ancestral en la bibliografía con PDF. G02 (Ganyani 2020) estima 5.20 d en Singapur con aislamiento y cuarentena vigentes (p. 1) y sin corregir el acortamiento por agotamiento de susceptibles (p. 6): no es intrínseco. Decisión de Omar 2026-11-04: se usa como supuesto con sensibilidad."
+    fuente_candidata: {clave: G02, doi: "10.2807/1560-7917.ES.2020.25.17.2000257", pagina: "p. 1 (resumen); Tabla 1, p. 5"}
+    sensibilidad:
+      - {min: 3.78, max: 6.78, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Singapur, CrI95 de la media 5.20"}
+      - {min: 3.01, max: 4.91, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Tianjin, media 3.95 (alternativa inferior)"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Mediana aproximada del periodo infeccioso en asintomáticos, un solo estudio. Solo cubre D más largos que el base."}
+  D_ola2:
+    valor: 5.20
+    unidad: dia
+    definicion: intervalo_generacion
+    estimador: realizado_bajo_contencion
+    ola: ola2
+    variante: ancestral (B.1.1.519)
+    supuesto: true
+    justificacion: "Linaje ancestral; B.1.1.519 no tiene GI propio en la bibliografía. Regla: D_ola2 = D_ola1 (hereda que G02 no es intrínseco). Alpha (G05) no dominó ninguna ola en México: entra solo a la sensibilidad. Decisión de Omar 2026-11-04."
+    fuente_candidata: {clave: G02, doi: "10.2807/1560-7917.ES.2020.25.17.2000257", pagina: "p. 1 (resumen); Tabla 1, p. 5"}
+    sensibilidad:
+      - {min: 3.78, max: 6.78, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Singapur, CrI95 de la media 5.20"}
+      - {min: 3.01, max: 4.91, tipo: CrI95, clave: G02, pagina: "p. 1 (resumen); Tabla 1, p. 5", nota: "Tianjin, media 3.95"}
+      - {min: 4.7, max: 6.5, tipo: CrI95, clave: G05, pagina: "p. 603 (Summary); p. 606 (Results)", nota: "Alpha, media intrínseca 5.5"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
+  D_ola3:
+    valor: 4.7
+    unidad: dia
+    definicion: intervalo_generacion
+    estimador: intrinseco
+    ola: ola3
+    variante: Delta (B.1.617.2)
+    supuesto: false
+    fuente: {tipo: doi, clave: G05, doi: "10.1016/S1473-3099(22)00001-9", pagina: "p. 603 (Summary); p. 606 (Results)", cita: "Hart et al. 2022, Lancet Infect Dis 22(5):603-610"}
+    sensibilidad:
+      - {min: 4.1, max: 5.6, tipo: CrI95, clave: G05, pagina: "p. 603 (Summary); p. 606 (Results)", nota: "Delta, hogares Reino Unido may-ago 2021"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
+  D_ola4:
+    valor: 6.84
+    unidad: dia
+    definicion: intervalo_generacion
+    estimador: intrinseco
+    ola: ola4
+    variante: Omicron BA.1
+    supuesto: false
+    fuente: {tipo: doi, clave: G06, doi: "10.1016/j.lanepe.2022.100446", pagina: "p. 1 (Summary, Findings); Tabla 2", cita: "Manica et al. 2022, Lancet Reg Health Eur 19:100446 (hogares, Reggio Emilia, enero 2022: BA.1)"}
+    sensibilidad:
+      - {min: 5.72, max: 8.60, tipo: CrI95, clave: G06, pagina: "p. 1 (Summary, Findings); Tabla 2", nota: "Ómicron BA.1"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
+  D_ola5:
+    valor: 6.84
+    unidad: dia
+    definicion: intervalo_generacion
+    estimador: intrinseco
+    ola: ola5
+    variante: Omicron BA.2/BA.5
+    supuesto: true
+    justificacion: "Sin GI intrínseco de BA.2/BA.5 en la bibliografía. Regla: D_ola5 = D_ola4 (valor de BA.1, G06). Decisión de Omar 2026-11-04."
+    fuente_candidata: {clave: G06, doi: "10.1016/j.lanepe.2022.100446", pagina: "p. 1 (Summary, Findings); Tabla 2"}
+    sensibilidad:
+      - {min: 5.72, max: 8.60, tipo: CrI95, clave: G06, pagina: "p. 1 (Summary, Findings); Tabla 2", nota: "BA.1 aplicado a BA.2/BA.5"}
+      - {min: 6.5, max: 9.5, tipo: rango_periodo_infeccioso, clave: G04, pagina: "p. 1 (resumen)", nota: "Solo cubre D más largos que el base."}
+
+  # --- Incubación: SOLO para H5 (síntomas -> infección). NO es D. ----------
+  incubacion_mediana:
+    valor: null
+    unidad: dia
+    definicion: incubacion
+    supuesto: true
+    justificacion: "Retraso infección->síntomas para correr la fecha de cambio tau de H5. Copiar valor y página de G01 (Lauer et al. 2020). No se usa en el SIR."
+    sensibilidad: {min: 3.0, max: 7.0}
+    fuente_candidata: {clave: G01, doi: "10.7326/M20-0504"}
+
+  # --- Seroprevalencias (ENSANUT) ------------------------------------------
+  sero_ensanut2020:
+    valor: null
+    unidad: fraccion
+    supuesto: true
+    justificacion: "Seroprevalencia nacional anti-SARS-CoV-2, ENSANUT 2020 Covid-19. Copiar estimación puntual, IC 95% y página de I03 (Basto-Abreu et al. 2022)."
+    sensibilidad: {min: 0.15, max: 0.35}
+    fuente_candidata: {clave: I03, doi: "10.1038/s41467-022-28232-9"}
+  sero_ensanut2020_ee:
+    valor: null
+    unidad: fraccion
+    supuesto: false
+    fuente: {tipo: regla, regla: "ee = (lim_sup - lim_inf) / (2*1.96) con el IC 95% publicado de sero_ensanut2020.", depende_de: [sero_ensanut2020]}
+  sero_ensanut2022:
+    valor: null
+    unidad: fraccion
+    supuesto: true
+    justificacion: "Seroprevalencia ENSANUT 2022 (distinguir anti-N de anti-S por la vacunación). Copiar cifra, anticuerpo y página de I01 (Carnalla et al. 2023)."
+    sensibilidad: {min: 0.5, max: 1.0}
+    fuente_candidata: {clave: I01, doi: "10.1002/jmv.29038"}
+  sero_ensanut2022_ee:
+    valor: null
+    unidad: fraccion
+    supuesto: false
+    fuente: {tipo: regla, regla: "ee = (lim_sup - lim_inf) / (2*1.96) con el IC 95% publicado de sero_ensanut2022.", depende_de: [sero_ensanut2022]}
+
+  # --- S0/N por ola --------------------------------------------------------
+  s0_ola1:
+    valor: 1.0
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "Virus nuevo en 2020: sin inmunidad previa, S0 = N. Además rompe la simetría de escala de H1 (plan_analisis.md, nota 1)."}
+  s0_ola2:
+    valor: null
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "s0 = 1 - sero_ensanut2020 (fracción no infectada al inicio de la ola 2; ENSANUT 2020 se levantó entre olas 1 y 2).", depende_de: [sero_ensanut2020]}
+  s0_ola3:
+    valor: null
+    unidad: "1"
+    supuesto: true
+    justificacion: "Tras la vacunación (2021) S0 depende de infección + vacuna; no hay encuesta nacional justo antes de la ola 3. Se estima o se barre."
+    sensibilidad: {min: 0.2, max: 0.8}
+  s0_ola4:
+    valor: null
+    unidad: "1"
+    supuesto: true
+    justificacion: "Ómicron escapa parcialmente a la inmunidad previa; S0 efectivo no observable directamente. Se estima o se barre."
+    sensibilidad: {min: 0.2, max: 0.9}
+  s0_ola5:
+    valor: null
+    unidad: "1"
+    supuesto: true
+    justificacion: "Posterior a ENSANUT 2022 / BA.1; S0 efectivo para BA.5 sin medición directa. Se estima o se barre."
+    sensibilidad: {min: 0.1, max: 0.8}
+
+  # --- rho: fracción de infecciones reportadas como caso -------------------
+  # rho se ESTIMA por ola (src/verosimilitud.py). Estas entradas son el valor
+  # de referencia contra el que se compara la MLE, calculado por regla.
+  rho_ola1:
+    valor: null
+    unidad: "1"
+    supuesto: false
+    fuente: {tipo: regla, regla: "rho = casos confirmados acumulados (SSA) desde el inicio de la ola 1 hasta la fecha media de ENSANUT 2020 / (sero_ensanut2020 * N). Casos: data/raw (F3).", depende_de: [sero_ensanut2020, N]}
+  rho_ola2_5:
+    valor: null
+    unidad: "1"
+    supuesto: true
+    justificacion: "Sin encuesta serológica que acote cada ola posterior por separado y con cambios en la política de pruebas; rho se estima libre en cada ola y se barre en este rango."
+    sensibilidad: {min: 0.02, max: 0.5}

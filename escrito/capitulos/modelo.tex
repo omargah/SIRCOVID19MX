@@ -1,0 +1,16 @@
+\section{Modelo}
+% Borrador (F2). Debe coincidir con src/sir.py y src/verosimilitud.py.
+Usamos el SIR en fracciones de población,
+\begin{align}
+  \dot s &= -\beta s i, & \dot i &= \beta s i - \gamma i, & \beta &= R_0\gamma,
+\end{align}
+con $s(0)=s_0$ e $i(0)=i_0$. Los casos reportados en la semana $k$ siguen
+una binomial negativa de media
+\begin{equation}
+  \mu_k = \rho N\,[s(t_k) - s(t_{k+1})], \qquad t_k = 7k\ \text{días},
+  \label{eq:mu}
+\end{equation}
+y tamaño $k$, de modo que $\operatorname{Var} = \mu_k + \mu_k^2/k$.
+El aumento de seroprevalencia entre los días $t_a$ y $t_b$ se modela como
+$s(t_a)-s(t_b)$ con error normal de desviación igual al error estándar de
+la encuesta.
