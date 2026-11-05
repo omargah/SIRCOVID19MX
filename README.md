@@ -51,9 +51,15 @@ Máxima verosimilitud con perfiles (nada bayesiano). β constante por ola
 ```
 config/parametros.yaml   parámetros con fuente (regla 2)
 data/raw/                datos descargados, sin tocar (no van a git; registro en README)
-data/processed/          datos derivados, regenerables
+data/processed/          series derivadas del pipeline DGE (serie principal y manifiesto en git)
+data/fuentes.csv         procedencia de cada crudo: URL, fecha de descarga, SHA-256
+data/inventario_historicos.csv  inventario de versiones semanales de la DGE
 src/
   parametros.py          carga y valida config/parametros.yaml (regla 2)
+  datos.py               pipeline de microdatos DGE: serie nacional por inicio de síntomas (python -m src.datos)
+  comparar_tablero.py    diferencias contra el tablero CONAHCYT (PT1)
+  eda.py                 EDA: día de la semana, retrasos, truncamiento
+  series_historicas.py, fuentes.py   series por versión histórica; registro de fuentes
   olas.py                (F3) regla de olas declarada + A1 + frontera 1.ª/2.ª (docs/regla_olas.md)
   olas_provisional.py    (F3) otra regla de olas, "provisional"; ver docs/pendientes_integracion.md
   sir.py                 SIR en personas (β constante y por tramos), relaciones exactas, modelo de observación
@@ -66,6 +72,7 @@ scripts/
   make_numeros.py        -> reports/numeros.tex
   make_figuras.py        -> reports/figuras/
   make_tablas.py         -> reports/tablas/
+  registrar_fuente.py, inventario_historicos.py   procedencia de crudos; inventario de versiones
 data/*.csv               series de casos de las olas (JHU CSSE; DGE vía mexicovid19), versionadas
 resultados/olas/         tablas y figuras de la regla de olas (declarada/, A1/, A1_frontera/)
 reports/                 todo lo generado que cita el escrito
@@ -73,6 +80,7 @@ escrito/                 LaTeX
 docs/actas/              acta de cierre de cada fase
 docs/plan_analisis.md    plan (borrador hasta cerrar F4)
 docs/desviaciones.md     registro de desviaciones
+docs/diccionario_datos.md, nota_diferencias.md, inventario_historicos.md   pipeline DGE (F3)
 docs/regla_olas.md       regla de olas declarada antes de aplicarse; docs/olas_resultados.md: resultados
 docs/teoria_verificacion.md  tabla derivación → test y discrepancias halladas
 bibliografia/            índice, BibTeX y fichas de lectura (F1)
@@ -104,6 +112,22 @@ si no, crea `.venv/` con pip usando los mismos paquetes de
 `environment.yml`. `make figuras` regenera las figuras (corre el
 experimento sintético, unos minutos, si algo cambió). `make` regenera
 números, figuras y tablas; `make escrito` además compila el PDF (requiere LaTeX).
+
+## Datos (F3): pipeline de microdatos DGE
+
+Fuente primaria: microdatos de la **DGE** (Secretaría de Salud, Datos Abiertos COVID-19).
+Fuente secundaria (solo para comparar con el PT1): **tablero CONAHCYT**, que deriva de la DGE.
+
+```bash
+pip install -r requirements.txt   # o `make env` (environment.yml)
+```
+
+```bash
+make todo    # verifica hashes, genera series, comprueba determinismo, compara, inventario y EDA
+```
+
+Los crudos se descargan a mano; ver [`data/raw/README.md`](data/raw/README.md). Definiciones y cambios de
+criterio 2020–2022 en [`docs/diccionario_datos.md`](docs/diccionario_datos.md).
 
 ## Fases
 

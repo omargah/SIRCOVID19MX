@@ -5,12 +5,20 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Datos crudos de la SSA: pesan GB. Se descargan con el script de F3 y se
-# documenta la URL, la fecha de descarga y el hash SHA-256 en data/raw/README.md.
-data/raw/*
+# Crudos de la SSA/DGE: pesan GB. Se versiona solo su procedencia (data/fuentes.csv)
+# y data/raw/README.md (URL, fecha de descarga y hash SHA-256).
+data/raw/**
 !data/raw/README.md
-data/processed/*
-!data/processed/README.md
+!data/raw/*/
+!data/raw/*/*/
+!data/raw/**/.gitkeep
+
+# Intermedios regenerables; la serie principal y el manifiesto sí se versionan
+# (criterio de compassionate-dijkstra; ver docs/pendientes_integracion.md).
+data/processed/cubos/
+data/processed/historicos/
+data/processed/eda/
+data/processed/comparacion_tablero.csv
 
 # LaTeX
 escrito/*.aux

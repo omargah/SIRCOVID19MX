@@ -2,6 +2,7 @@
 #   make env      crea el entorno (conda si existe; si no, .venv con pip)
 #   make test     corre las pruebas
 #   make teoria   solo la verificación simbólica+numérica del Cap. 2 (tests/teoria/)
+#   make todo     pipeline de datos DGE (F3): fuentes, serie, comparar, EDA (ver data/raw/README.md)
 #   make figuras  regenera figuras (y el experimento sintético si cambió algo)
 #   make          números + figuras + tablas para el escrito
 #
@@ -54,4 +55,31 @@ resumen:
 	$(PY) scripts/resumen_recuperacion.py
 	$(PY) scripts/listar_supuestos.py
 
-.PHONY: all env test teoria figuras tablas escrito recuperacion resumen
+# ---------------------------------------------------------------------------
+# Pipeline de datos F3 (microdatos DGE por fecha de inicio de síntomas).
+# Requiere los crudos en data/raw/ (ver data/raw/README.md). No corre en `make test`.
+# ---------------------------------------------------------------------------
+todo: fuentes serie determinismo comparar inventario eda
+
+fuentes:            ## verifica que los crudos no cambiaron desde su registro
+	$(PY) scripts/registrar_fuente.py --verificar
+
+serie:              ## (3)+(6) serie diaria nacional y serie de hospitalizaciones/defunciones
+	$(PY) -m src.datos
+
+determinismo:       ## dos corridas idénticas byte a byte
+	$(PY) -m src.datos --verificar-determinismo
+
+comparar:           ## (4) nota de diferencias vs. tablero CONAHCYT
+	$(PY) -m src.comparar_tablero
+
+historicos:         ## series por versión histórica (insumo de EDA §3)
+	$(PY) -m src.series_historicas
+
+eda:                ## (5) EDA de artefactos de medición
+	$(PY) -m src.eda $(if $(wildcard data/processed/historicos/*),--historicos data/processed/historicos,)
+
+inventario:         ## (7) inventario de versiones semanales
+	$(PY) scripts/inventario_historicos.py
+
+.PHONY: all env test teoria figuras tablas escrito recuperacion resumen todo serie determinismo comparar historicos eda inventario fuentes

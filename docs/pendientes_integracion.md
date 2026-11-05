@@ -46,3 +46,46 @@ microdatos **DGE por fecha de inicio de síntomas**. No se decidió cuál manda.
 podrían moverse unos días porque la fecha de síntomas va antes que la de
 reporte. Hasta entonces las olas son provisionales. En este paso no se
 cambió ρ, la ventana de suavizado ni la frontera 2020-10-01.
+
+## P-C. Qué se versiona de `data/processed/`
+
+**Dónde.** `.gitignore`. La rama de integración ignoraba todo
+`data/processed/*` (salvo su README). `compassionate-dijkstra` quiere
+versionar la serie principal, el manifiesto y las series de
+hospitalizaciones/defunciones, e ignora solo los intermedios (`cubos/`,
+`historicos/`, `eda/`, `comparacion_tablero.csv`).
+
+**Qué se hizo.** Se tomó el criterio de compassionate para `data/processed/`
+(si no, el pipeline escribiría archivos que nadie ve que se pierden). Los
+crudos siguen ignorados; se versiona solo `data/fuentes.csv` y el README.
+
+**Opciones.** (a) como quedó; (b) versionar solo `serie_nacional_sintomas.csv`
+y `manifiesto.json`; (c) no versionar nada derivado (todo regenerable).
+
+**Recomendación.** (b): lo más corto que permite reproducir el análisis sin
+meter archivos grandes. Decide Omar.
+
+## P-D. Dos listas de dependencias
+
+**Dónde.** `environment.yml` (rama de partida, lo usa `make env`) y
+`requirements.txt` (compassionate: pandas, matplotlib…). No se unieron.
+El pipeline DGE (`src/datos.py`, `src/eda.py`) necesita pandas y matplotlib;
+`make env` instala lo de `environment.yml`.
+
+**Recomendación.** Una sola lista (`environment.yml`) y borrar
+`requirements.txt`, comprobando antes que `environment.yml` trae todo lo que
+usa `src/eda.py` y `src/comparar_tablero.py` (**no verificado**: esos
+módulos solo se probaron con datos sintéticos).
+
+## P-E. Otros restos de este paso
+
+- `src/datos.py:230` y `tests/sintetico.py:51` siguen usando `weekday`
+  (en un índice/`dt`). Solo se pidió cambiar `src/eda.py`. Con pandas 3.0.5
+  `weekday` y `dayofweek` funcionan y no dan aviso: que `weekday` desaparezca
+  en pandas 4 es afirmación del inventario, **no verificada**.
+- `data/processed/README.md` (rama de partida) dice que todo se regenera con
+  código de `src/datos.py`: ahora sí es el pipeline DGE.
+- `docs/actas/F0-alcance.md` sigue mencionando `src/datos.py::cargar_parametros`
+  (acta histórica; no se reescribió).
+- `reports/parametros_fuentes.md` dice "validado por `src/datos.py`" hasta que
+  Omar lo regenere con `make resumen`.
