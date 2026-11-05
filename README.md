@@ -54,6 +54,7 @@ data/raw/                datos descargados, sin tocar (no van a git; registro en
 data/processed/          series derivadas del pipeline DGE (serie principal y manifiesto en git)
 data/fuentes.csv         procedencia de cada crudo: URL, fecha de descarga, SHA-256
 data/inventario_historicos.csv  inventario de versiones semanales de la DGE
+sirmx/                   F4 (rama kind-newton): SIR por ola con RK4+numba, verosimilitud diaria, perfiles, r, puntos de cambio, pronóstico
 src/
   parametros.py          carga y valida config/parametros.yaml (regla 2)
   datos.py               pipeline de microdatos DGE: serie nacional por inicio de síntomas (python -m src.datos)
@@ -66,19 +67,25 @@ src/
   verosimilitud.py       log-verosimilitud, MLE, perfiles, bootstrap
   identificabilidad.py   simetría de escala (H1), IC por perfil
 tests/                   pytest: contra soluciones exactas y datos sintéticos (incl. test_olas*.py)
+tests/test_1_observacion.py … test_8_reproducibilidad.py   pruebas de sirmx (F4)
+tests/test_equivalencia_simuladores.py   sirmx contra src/sir.py (la referencia oficial)
 tests/teoria/            derivaciones a–k del Cap. 2: SymPy + sir.py (make teoria)
 scripts/
   correr_sintetico.py    experimento sintético (lento) -> reports/resultados/
   make_numeros.py        -> reports/numeros.tex
   make_figuras.py        -> reports/figuras/
   make_tablas.py         -> reports/tablas/
+  validacion_sintetica.py   F4: regenera docs/validacion_sintetica.md
   registrar_fuente.py, inventario_historicos.py   procedencia de crudos; inventario de versiones
 data/*.csv               series de casos de las olas (JHU CSSE; DGE vía mexicovid19), versionadas
 resultados/olas/         tablas y figuras de la regla de olas (declarada/, A1/, A1_frontera/)
 reports/                 todo lo generado que cita el escrito
 escrito/                 LaTeX
 docs/actas/              acta de cierre de cada fase
-docs/plan_analisis.md    plan (borrador hasta cerrar F4)
+docs/plan_analisis.md    plan (borrador hasta cerrar F4); docs/plan_analisis_f4.md: el plan que escribió F4 (hay dos, ver pendientes)
+docs/decisiones.md       decisiones D0, I2–I4 y correcciones de F4 (I2–I4 provisionales)
+docs/validacion_sintetica.md  tablas real vs estimado (generadas por F4)
+docs/pendientes_integracion.md, decisiones_integracion.md   lo no decidido / lo decidido al integrar
 docs/desviaciones.md     registro de desviaciones
 docs/diccionario_datos.md, nota_diferencias.md, inventario_historicos.md   pipeline DGE (F3)
 docs/regla_olas.md       regla de olas declarada antes de aplicarse; docs/olas_resultados.md: resultados
@@ -129,6 +136,20 @@ make todo    # verifica hashes, genera series, comprueba determinismo, compara, 
 Los crudos se descargan a mano; ver [`data/raw/README.md`](data/raw/README.md). Definiciones y cambios de
 criterio 2020–2022 en [`docs/diccionario_datos.md`](docs/diccionario_datos.md).
 
+## Validación sintética (F4, `sirmx/`)
+
+`sirmx/` conserva su integrador RK4 con numba (~170 veces más rápido que LSODA);
+`src/sir.py` sigue siendo la referencia oficial y
+`tests/test_equivalencia_simuladores.py` comprueba que coinciden.
+
+```bash
+OPENBLAS_NUM_THREADS=1 python -m pytest -n 4 tests/test_[1-8]_*.py    # unos 7 min
+```
+
+```bash
+OPENBLAS_NUM_THREADS=1 python scripts/validacion_sintetica.py         # regenera docs/validacion_sintetica.md
+```
+
 ## Fases
 
 Cada fase cierra con acta (`docs/actas/Fx-nombre.md`), commit etiquetado
@@ -140,7 +161,7 @@ Cada fase cierra con acta (`docs/actas/Fx-nombre.md`), commit etiquetado
 | F1 | Bibliografía: fichas con cifra y página | En curso |
 | F2 | Teoría: SIR, identificabilidad, verosimilitud | En curso (derivación de H1 en borrador) |
 | F3 | Datos SSA y ENSANUT; regla de olas ([regla](docs/regla_olas.md), [resultados](docs/olas_resultados.md)) | En curso (olas calculadas con JHU; datos DGE pendientes) |
-| F4 | Validación sintética de todos los métodos; **congela el plan** | En curso (H1 hecho; H2–H5 pendientes) |
+| F4 | Validación sintética de todos los métodos; **congela el plan** | En curso (H1 hecho; `sirmx/` trae la validación sintética de la rama F4; el plan sigue sin congelar, ver pendientes) |
 | F5 | Análisis con datos reales | Bloqueada hasta cerrar F4 |
 | F6 | Escrito | Pendiente |
 | F7 | Presentación | Pendiente |
